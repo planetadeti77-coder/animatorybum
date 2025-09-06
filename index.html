@@ -50,6 +50,19 @@
             transform: translateY(-8px) rotate(1deg) scale(1.02);
             box-shadow: 0 15px 30px rgba(0,0,0,0.2);
         }
+        .off-canvas-menu {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+            width: 35%;
+        }
+        .off-canvas-menu.open {
+            transform: translateX(0);
+        }
+        @media (max-width: 768px) {
+            .off-canvas-menu {
+                width: 75%;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
@@ -81,6 +94,14 @@
         // Кнопки для показа/скрытия
         const toggleAnimatorsBtn = document.getElementById('toggle-animators-btn');
         const toggleServicesBtn = document.getElementById('toggle-services-btn');
+        
+        // Элементы для мобильного меню
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const closeMenuButton = document.getElementById('close-menu-button');
+        const mobileNavLinks = document.querySelectorAll('#mobile-menu a');
+        const backdrop = document.getElementById('menu-backdrop');
+
 
         // Инициализация Firebase
         function initializeFirebase() {
@@ -362,6 +383,29 @@
             toggleSection(extraServices, toggleServicesBtn);
         });
 
+        // Логика для мобильного меню
+        const toggleMobileMenu = () => {
+            mobileMenu.classList.toggle('open');
+            backdrop.classList.toggle('hidden');
+        };
+
+        mobileMenuButton.addEventListener('click', toggleMobileMenu);
+        closeMenuButton.addEventListener('click', toggleMobileMenu);
+        backdrop.addEventListener('click', toggleMobileMenu);
+
+        // Закрываем меню при нажатии на ссылку
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                toggleMobileMenu();
+            });
+        });
+
         // Запуск
         window.onload = () => {
           initializeFirebase();
@@ -371,13 +415,13 @@
 
     <!-- Шапка сайта -->
     <header class="bg-white shadow-md py-4 z-50 sticky top-0">
-        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        <div class="container mx-auto px-6 flex items-center justify-between">
             <!-- Логотип "Аниматоры БУМ" -->
             <a href="#" class="text-3xl font-extrabold text-orange-500 flex items-center gap-2">
                 <i class="fas fa-magic text-4xl text-blue-500"></i> Аниматоры БУМ
             </a>
 
-            <!-- Навигационное меню -->
+            <!-- Навигационное меню для десктопа -->
             <nav class="hidden md:flex items-center space-x-6">
                 <a href="#animators" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Аниматоры</a>
                 <a href="#services" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Другие услуги</a>
@@ -386,12 +430,34 @@
                 <a href="#contact" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Контакты</a>
             </nav>
 
-            <!-- Контакты в шапке -->
-            <a href="tel:+79001234567" class="hidden sm:block text-gray-700 font-semibold hover:text-blue-500 transition-colors duration-200">
-                +7 (900) 123-45-67
-            </a>
+            <!-- Кнопка-гамбургер для мобильного меню -->
+            <button id="mobile-menu-button" class="md:hidden text-gray-700 hover:text-orange-500 focus:outline-none">
+                <i class="fas fa-bars fa-2x"></i>
+            </button>
         </div>
     </header>
+
+    <!-- Мобильное меню (off-canvas) -->
+    <div id="mobile-menu" class="off-canvas-menu fixed top-0 right-0 h-full bg-white shadow-xl z-50 flex flex-col p-8 md:hidden">
+        <div class="flex justify-end mb-8">
+            <button id="close-menu-button" class="text-gray-700 hover:text-orange-500 focus:outline-none">
+                <i class="fas fa-times fa-2x"></i>
+            </button>
+        </div>
+        <nav class="flex flex-col space-y-6 text-xl">
+            <a href="#animators" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Аниматоры</a>
+            <a href="#services" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Другие услуги</a>
+            <a href="#gallery" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Галерея</a>
+            <a href="#reviews" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Отзывы</a>
+            <a href="#contact" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Контакты</a>
+            <a href="tel:+79001234567" class="mt-4 text-gray-700 font-semibold hover:text-blue-500 transition-colors duration-200">
+                +7 (900) 123-45-67
+            </a>
+        </nav>
+    </div>
+
+    <!-- Задний фон для меню -->
+    <div id="menu-backdrop" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300"></div>
 
     <!-- Главный экран - Секция-герой -->
     <main class="flex-grow flex flex-col items-center p-4">
