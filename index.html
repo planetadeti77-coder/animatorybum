@@ -30,13 +30,8 @@
             opacity: 0.4;
         }
         .container-shadow {
-            box-shadow: 0 10px 30px rgba(255,103,97,0.2), 0 5px 15px rgba(255,103,97,0.15);
-        }
-        .admin-section {
-            display: none;
-        }
-        .user-id-container {
-            word-break: break-all;
+            /* Обновленный стиль тени, позаимствованный из дизайна */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
         }
         /* Стиль для круглых кнопок с тенью */
         .cta-button {
@@ -47,13 +42,21 @@
             transform: translateY(-3px) scale(1.05);
             box-shadow: 0 12px 20px rgba(0,0,0,0.3);
         }
+        .card {
+            transition: all 0.3s ease-in-out;
+            transform-origin: center;
+        }
+        .card:hover {
+            transform: translateY(-8px) rotate(1deg) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, getDoc, addDoc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, getDoc, addDoc, setDoc, updateDoc, deleteDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Глобальные переменные Firebase, которые передаются из окружения Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -65,7 +68,6 @@
 
         // Элементы DOM
         const galleryContainer = document.getElementById('gallery-container');
-        const galleryForm = document.getElementById('gallery-form');
         const reviewsContainer = document.getElementById('reviews-container');
         const reviewsForm = document.getElementById('reviews-form');
         const adminElements = document.querySelectorAll('.admin-section');
@@ -115,8 +117,8 @@
                     console.log("No user signed in. Attempting anonymous sign-in.");
                     userId = null;
                     adminElements.forEach(el => el.style.display = 'none');
-                    loginButton.classList.remove('hidden');
-                    logoutButton.classList.add('hidden');
+                    loginButton.classList.add('hidden');
+                    logoutButton.classList.remove('hidden');
                     if (userIdDisplay) {
                         userIdDisplay.textContent = 'Для управления контентом войдите в систему.';
                     }
@@ -130,29 +132,74 @@
             });
         }
 
-        // Слушатели для Firestore
+        // Функция для загрузки фотографий из ВК
+        async function loadVkPhotos() {
+            loadingIndicator.classList.remove('hidden');
+            galleryContainer.innerHTML = '';
+            
+            // Замените эти значения на свои
+            const OWNER_ID = '-169543162'; // ID группы (с минусом для групп)
+            const ALBUM_ID = '257577573'; // ID альбома
+            const API_VERSION = '5.131';
+            
+            // ВНИМАНИЕ: В реальном приложении нельзя хранить токен на фронтенде!
+            // Его следует использовать на безопасном бэкенде.
+            const ACCESS_TOKEN = 'mock-access-token'; 
+            
+            const url = `https://api.vk.com/method/photos.get?owner_id=${OWNER_ID}&album_id=${ALBUM_ID}&access_token=${ACCESS_TOKEN}&v=${API_VERSION}&count=20&photo_sizes=1`;
+
+            // Мок-данные для демонстрации, так как прямой вызов API с фронтенда может не работать
+            const mockPhotos = {
+                response: {
+                    items: [
+                        { sizes: [{ url: 'https://placehold.co/800x600/FFD700/FFF?text=Фото+1' }], text: 'Магическое шоу' },
+                        { sizes: [{ url: 'https://placehold.co/800x600/FF6F61/FFF?text=Фото+2' }], text: 'Веселый клоун' },
+                        { sizes: [{ url: 'https://placehold.co/800x600/ADD8E6/FFF?text=Фото+3' }], text: 'Пузырьковое шоу' },
+                        { sizes: [{ url: 'https://placehold.co/800x600/98FB98/FFF?text=Фото+4' }], text: 'Пиратская вечеринка' },
+                        { sizes: [{ url: 'https://placehold.co/800x600/DDA0DD/FFF?text=Фото+5' }], text: 'Принцессы Диснея' },
+                    ]
+                }
+            };
+
+            try {
+                // В реальной жизни здесь был бы fetch
+                // const response = await fetch(url);
+                // const data = await response.json();
+                
+                const data = mockPhotos; // Используем мок-данные
+                
+                if (data.response && data.response.items) {
+                    data.response.items.forEach(photo => {
+                        const bestSize = photo.sizes.find(size => size.type === 'x' || size.type === 'y' || size.type === 'z' || size.type === 'm' || size.type === 's');
+                        if (bestSize) {
+                            const card = createGalleryCard(bestSize.url, photo.text);
+                            galleryContainer.appendChild(card);
+                        }
+                    });
+                } else {
+                    console.error("Ошибка при получении фото из ВК:", data.error);
+                }
+            } catch (error) {
+                console.error("Ошибка при загрузке фото из ВК:", error);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+        
+        // Слушатели для Firestore (только для отзывов и заявок)
         function setupRealtimeListeners() {
             if (!db) {
                 console.error("Firestore is not initialized.");
                 return;
             }
 
-            // Галерея
-            onSnapshot(collection(db, `/artifacts/${appId}/public/data/gallery`), (snapshot) => {
-                loadingIndicator.classList.add('hidden');
-                galleryContainer.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const card = createGalleryCard(data, doc.id);
-                    galleryContainer.appendChild(card);
-                });
-            }, (error) => {
-                console.error("Error fetching gallery data:", error);
-                loadingIndicator.classList.add('hidden');
-            });
-
+            const reviewsRef = collection(db, `/artifacts/${appId}/public/data/reviews`);
+            
+            // Заполнение базы данных отзывами, если они еще не существуют
+            seedReviewsIfEmpty(reviewsRef);
+            
             // Отзывы
-            onSnapshot(collection(db, `/artifacts/${appId}/public/data/reviews`), (snapshot) => {
+            onSnapshot(reviewsRef, (snapshot) => {
                 reviewsContainer.innerHTML = '';
                 snapshot.forEach(doc => {
                     const data = doc.data();
@@ -163,36 +210,80 @@
                 console.error("Error fetching reviews data:", error);
             });
         }
+        
+        // Заполняет коллекцию отзывов, если она пуста
+        async function seedReviewsIfEmpty(reviewsRef) {
+            const snapshot = await getDocs(query(reviewsRef));
+            if (snapshot.empty) {
+                const initialReviews = [
+                    {
+                        quote: "Наш сын был в полном восторге от Пирата Джека! Он до сих пор ищет сокровища по всему дому. Спасибо за незабываемый праздник!",
+                        author: "Анна, мама Саши",
+                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Анна",
+                        created_at: new Date()
+                    },
+                    {
+                        quote: "Принцесса Эльза была просто волшебной! Дочь верила, что она настоящая, и это было самое главное. Мечта сбылась!",
+                        author: "Ольга и Сергей",
+                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Ольга",
+                        created_at: new Date()
+                    },
+                    {
+                        quote: "Научное шоу — это что-то невероятное! Дети не только веселились, но и узнали много нового. Потрясающе!",
+                        author: "Иван, папа Егора",
+                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Иван",
+                        created_at: new Date()
+                    },
+                    {
+                        quote: "Мы приглашали Человека-паука, и это был лучший день рождения в нашей жизни! Он не просто играл, а создал целую историю.",
+                        author: "Марина",
+                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Марина",
+                        created_at: new Date()
+                    },
+                    {
+                        quote: "Шоу мыльных пузырей было таким красивым и завораживающим! Все дети, и даже взрослые, были в восторге.",
+                        author: "Ксения",
+                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Ксения",
+                        created_at: new Date()
+                    },
+                    {
+                        quote: "Наши аниматоры-роботы сделали вечеринку по-настоящему футуристической! Сын и его друзья были в полном восторге.",
+                        author: "Виктор",
+                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Виктор",
+                        created_at: new Date()
+                    }
+                ];
+
+                for (const review of initialReviews) {
+                    await addDoc(reviewsRef, review);
+                }
+                console.log("База данных отзывов была заполнена.");
+            }
+        }
 
         // Вспомогательные функции для UI
-        function createGalleryCard(data, id) {
-            const isVideo = data.media_url.includes('youtube.com') || data.media_url.includes('youtu.be');
+        function createGalleryCard(imageUrl, title) {
             const card = document.createElement('div');
-            card.className = 'bg-white rounded-3xl overflow-hidden container-shadow transform hover:scale-105 transition-transform duration-300 relative border-4 border-yellow-300';
+            card.className = 'bg-white rounded-3xl overflow-hidden container-shadow card';
             card.innerHTML = `
                 <div class="aspect-w-16 aspect-h-9 w-full">
-                    ${isVideo ? `<iframe src="${data.media_url.replace('watch?v=', 'embed/')}" frameborder="0" allowfullscreen class="w-full h-full object-cover"></iframe>` : `<img src="${data.media_url}" alt="${data.title}" class="w-full h-full object-cover">`}
+                    <img src="${imageUrl}" alt="${title}" class="w-full h-full object-cover">
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">${data.title}</h3>
-                    <p class="text-gray-600">${data.description}</p>
-                </div>
-                <div class="admin-section absolute top-2 right-2 p-2 bg-white rounded-full shadow-md z-10" style="display: none;">
-                    <button class="delete-btn text-red-500 hover:text-red-700 p-2 rounded-full" data-id="${id}"><i class="fas fa-trash"></i></button>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">${title}</h3>
                 </div>
             `;
-            card.querySelector('.delete-btn').addEventListener('click', () => deleteDoc(doc(db, `/artifacts/${appId}/public/data/gallery`, id)));
             return card;
         }
 
         function createReviewCard(data, id) {
             const card = document.createElement('div');
-            card.className = 'bg-pink-100 rounded-3xl p-6 container-shadow flex items-start space-x-4 border-4 border-pink-300';
+            card.className = 'bg-white rounded-3xl p-6 container-shadow flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-4 card';
             card.innerHTML = `
                 <div class="flex-shrink-0">
-                    <img src="${data.photo_url || 'https://placehold.co/80x80/ffd9e6/f06292?text=Фото'}" alt="Фото" class="w-20 h-20 rounded-full object-cover border-2 border-white">
+                    <img src="${data.photo_url || 'https://placehold.co/80x80/ffd9e6/f06292?text=Фото'}" alt="Фото" class="w-20 h-20 rounded-full object-cover border-4 border-pink-300">
                 </div>
-                <div class="flex-grow">
+                <div class="flex-grow text-center md:text-left">
                     <p class="text-gray-700 italic mb-2">"${data.quote}"</p>
                     <p class="font-semibold text-pink-600">- ${data.author}</p>
                 </div>
@@ -200,27 +291,14 @@
                     <button class="delete-review-btn text-red-500 hover:text-red-700" data-id="${id}"><i class="fas fa-trash"></i></button>
                 </div>
             `;
-            card.querySelector('.delete-review-btn').addEventListener('click', () => deleteDoc(doc(db, `/artifacts/${appId}/public/data/reviews`, id)));
+            const deleteButton = card.querySelector('.delete-review-btn');
+            if (deleteButton) {
+                deleteButton.addEventListener('click', () => deleteDoc(doc(db, `/artifacts/${appId}/public/data/reviews`, id)));
+            }
             return card;
         }
 
         // Обработка форм
-        galleryForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = galleryForm.title.value;
-            const description = galleryForm.description.value;
-            const media_url = galleryForm.media_url.value;
-            if (title && media_url && db) {
-                await addDoc(collection(db, `/artifacts/${appId}/public/data/gallery`), {
-                    title,
-                    description,
-                    media_url,
-                    created_at: new Date()
-                }).catch(error => console.error("Error adding gallery item:", error));
-                galleryForm.reset();
-            }
-        });
-
         reviewsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const quote = reviewsForm.quote.value;
@@ -285,7 +363,10 @@
         });
 
         // Запуск
-        initializeFirebase();
+        window.onload = () => {
+          initializeFirebase();
+          loadVkPhotos(); // Загружаем фото из ВК при загрузке страницы
+        };
     </script>
 
     <!-- Шапка сайта -->
@@ -333,28 +414,28 @@
             <div class="container mx-auto px-6 text-center">
                 <h2 class="text-4xl md:text-5xl font-extrabold text-blue-600 mb-12">Наши аниматоры</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-yellow-300 transform hover:scale-105 transition-transform duration-300 animator-card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card">
                         <img src="https://placehold.co/400x400/FFB6C1/FFF?text=Эльза" alt="Эльза" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Принцесса Эльза</h3>
                         <p class="text-gray-600">Погрузимся в волшебный мир с песнями и танцами!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-yellow-300 transform hover:scale-105 transition-transform duration-300 animator-card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card">
                         <img src="https://placehold.co/400x400/ADD8E6/FFF?text=Человек-паук" alt="Человек-паук" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Человек-паук</h3>
                         <p class="text-gray-600">Научимся лазать по стенам и спасать мир от злодеев!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-yellow-300 transform hover:scale-105 transition-transform duration-300 animator-card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card">
                         <img src="https://placehold.co/400x400/98FB98/FFF?text=Пират+Джек" alt="Пират Джек" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Пират Джек</h3>
                         <p class="text-gray-600">Отправимся в морское приключение за сокровищами!</p>
                     </div>
                     <!-- Дополнительные аниматоры, скрытые по умолчанию -->
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-yellow-300 transform hover:scale-105 transition-transform duration-300 animator-card extra hidden">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden">
                         <img src="https://placehold.co/400x400/800080/FFF?text=Роботы" alt="Роботы" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Аниматоры-роботы</h3>
                         <p class="text-gray-600">Погружение в мир технологий и футуристических приключений!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-yellow-300 transform hover:scale-105 transition-transform duration-300 animator-card extra hidden">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden">
                         <img src="https://placehold.co/400x400/FFC0CB/FFF?text=Куклы+ЛОЛ" alt="Куклы ЛОЛ" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Куклы LOL Surprise</h3>
                         <p class="text-gray-600">Организуем самую модную вечеринку с любимыми куколками!</p>
@@ -371,28 +452,28 @@
             <div class="container mx-auto px-6 text-center">
                 <h2 class="text-4xl md:text-5xl font-extrabold text-orange-600 mb-12">Другие услуги</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-orange-300 transform hover:scale-105 transition-transform duration-300 service-card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card">
                         <i class="fas fa-flask text-6xl text-blue-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Научное шоу</h3>
                         <p class="text-gray-600">Увлекательные и безопасные эксперименты, которые удивят даже взрослых!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-orange-300 transform hover:scale-105 transition-transform duration-300 service-card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card">
                         <i class="fas fa-soap text-6xl text-pink-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Шоу мыльных пузырей</h3>
                         <p class="text-gray-600">Огромные, завораживающие пузыри, в которых можно оказаться!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-orange-300 transform hover:scale-105 transition-transform duration-300 service-card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card">
                         <i class="fas fa-paint-brush text-6xl text-purple-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Аквагрим</h3>
                         <p class="text-gray-600">Превратимся в любимых героев с помощью красочного и безопасного грима.</p>
                     </div>
                     <!-- Дополнительные услуги, скрытые по умолчанию -->
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-orange-300 transform hover:scale-105 transition-transform duration-300 service-card extra hidden">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden">
                         <i class="fas fa-magic text-6xl text-orange-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Фокусник</h3>
                         <p class="text-gray-600">Невероятные трюки и иллюзии, которые создадут атмосферу волшебства.</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow border-4 border-orange-300 transform hover:scale-105 transition-transform duration-300 service-card extra hidden">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden">
                         <i class="fas fa-theater-masks text-6xl text-teal-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Ростовые куклы</h3>
                         <p class="text-gray-600">Любимые персонажи мультфильмов в полный рост, готовые обниматься и веселиться!</p>
@@ -410,31 +491,9 @@
     <section id="gallery" class="py-20 bg-white">
         <div class="container mx-auto px-6">
             <h2 class="text-5xl font-extrabold text-center text-orange-500 mb-12">Фотогалерея</h2>
-            <div id="loading-indicator" class="text-center text-gray-500">Загрузка галереи...</div>
+            <div id="loading-indicator" class="text-center text-gray-500">Загрузка фото из ВКонтакте...</div>
             <div id="gallery-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Карточки галереи будут добавлены здесь с помощью JavaScript -->
-            </div>
-            
-            <!-- Админ-панель для галереи -->
-            <div class="admin-section mt-16 p-8 bg-gray-100 rounded-3xl container-shadow" style="display: none;">
-                <h3 class="text-3xl font-bold text-gray-700 mb-6">Добавить новое медиа в галерею</h3>
-                <form id="gallery-form" class="space-y-6">
-                    <div>
-                        <label for="title" class="block text-lg font-medium text-gray-600">Название:</label>
-                        <input type="text" id="title" name="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
-                    </div>
-                    <div>
-                        <label for="description" class="block text-lg font-medium text-gray-600">Описание:</label>
-                        <textarea id="description" name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"></textarea>
-                    </div>
-                    <div>
-                        <label for="media_url" class="block text-lg font-medium text-gray-600">Ссылка на медиа (изображение или YouTube):</label>
-                        <input type="url" id="media_url" name="media_url" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
-                    </div>
-                    <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-orange-600 transition-colors duration-300 transform hover:scale-105">
-                        Добавить в галерею
-                    </button>
-                </form>
             </div>
         </div>
     </section>
@@ -476,7 +535,7 @@
         <div class="container mx-auto px-6 text-center">
             <h2 class="text-5xl font-extrabold text-orange-600 mb-6">Организовать праздник</h2>
             <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">Оставьте свои контакты, и наш менеджер свяжется с вами, чтобы подобрать идеального аниматора.</p>
-            <form id="contact-form" class="max-w-xl mx-auto space-y-6 bg-white p-8 rounded-3xl container-shadow border-4 border-orange-300">
+            <form id="contact-form" class="max-w-xl mx-auto space-y-6 bg-white p-8 rounded-3xl container-shadow">
                 <div>
                     <label for="name" class="sr-only">Ваше имя</label>
                     <input type="text" id="name" name="name" placeholder="Ваше имя" class="w-full p-4 rounded-full border border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" required>
