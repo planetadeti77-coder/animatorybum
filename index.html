@@ -50,10 +50,12 @@
             transform: translateY(-8px) rotate(1deg) scale(1.02);
             box-shadow: 0 15px 30px rgba(0,0,0,0.2);
         }
+        /* Новый праздничный стиль для мобильного меню */
         .off-canvas-menu {
             transition: transform 0.3s ease-in-out;
             transform: translateX(100%);
             width: 35%;
+            background: linear-gradient(135deg, #f06292, #ffd700); /* Яркий градиент */
         }
         .off-canvas-menu.open {
             transform: translateX(0);
@@ -62,6 +64,69 @@
             .off-canvas-menu {
                 width: 75%;
             }
+        }
+        /* Стили для модального окна */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            animation: fadeIn 0.3s forwards;
+        }
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            animation: zoomIn 0.3s forwards;
+        }
+        .modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .close-btn, .nav-btn {
+            position: absolute;
+            color: #fff;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+            transition: color 0.3s;
+        }
+        .close-btn {
+            top: 20px;
+            right: 40px;
+        }
+        .nav-btn {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .prev-btn {
+            left: 40px;
+        }
+        .next-btn {
+            right: 40px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.8); }
+            to { transform: scale(1); }
+        }
+        .modal-info {
+            color: #fff;
+            margin-top: 1rem;
+            text-align: center;
         }
     </style>
 </head>
@@ -78,6 +143,8 @@
 
         let db, auth;
         let userId = null;
+        let galleryPhotos = []; // Массив для хранения данных галереи
+        let currentPhotoIndex = 0;
 
         // Элементы DOM
         const galleryContainer = document.getElementById('gallery-container');
@@ -102,6 +169,13 @@
         const mobileNavLinks = document.querySelectorAll('#mobile-menu a');
         const backdrop = document.getElementById('menu-backdrop');
 
+        // Элементы модального окна
+        const modal = document.getElementById('photo-modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalInfo = document.getElementById('modal-info');
+        const closeBtn = document.getElementById('close-modal');
+        const prevBtn = document.getElementById('prev-photo');
+        const nextBtn = document.getElementById('next-photo');
 
         // Инициализация Firebase
         function initializeFirebase() {
@@ -173,33 +247,34 @@
             const mockPhotos = {
                 response: {
                     items: [
-                        { sizes: [{ url: 'https://placehold.co/800x600/FFD700/FFF?text=Фото+1' }], text: 'Магическое шоу' },
-                        { sizes: [{ url: 'https://placehold.co/800x600/FF6F61/FFF?text=Фото+2' }], text: 'Веселый клоун' },
-                        { sizes: [{ url: 'https://placehold.co/800x600/ADD8E6/FFF?text=Фото+3' }], text: 'Пузырьковое шоу' },
-                        { sizes: [{ url: 'https://placehold.co/800x600/98FB98/FFF?text=Фото+4' }], text: 'Пиратская вечеринка' },
-                        { sizes: [{ url: 'https://placehold.co/800x600/DDA0DD/FFF?text=Фото+5' }], text: 'Принцессы Диснея' },
+                        { sizes: [{ url: 'https://placehold.co/800x600/FFD700/FFF?text=Магическое+шоу' }], text: 'Магическое шоу' },
+                        { sizes: [{ url: 'https://placehold.co/800x600/FF6F61/FFF?text=Веселый+клоун' }], text: 'Веселый клоун' },
+                        { sizes: [{ url: 'https://placehold.co/800x600/ADD8E6/FFF?text=Пузырьковое+шоу' }], text: 'Пузырьковое шоу' },
+                        { sizes: [{ url: 'https://placehold.co/800x600/98FB98/FFF?text=Пиратская+вечеринка' }], text: 'Пиратская вечеринка' },
+                        { sizes: [{ url: 'https://placehold.co/800x600/DDA0DD/FFF?text=Принцессы+Диснея' }], text: 'Принцессы Диснея' },
                     ]
                 }
             };
+            
+            // Заполняем глобальный массив данными
+            galleryPhotos = mockPhotos.response.items.map(item => {
+                const bestSize = item.sizes.find(size => size.type === 'x' || size.type === 'y' || size.type === 'z' || size.type === 'm' || size.type === 's');
+                return {
+                    url: bestSize ? bestSize.url : '',
+                    text: item.text
+                };
+            }).filter(item => item.url);
 
             try {
                 // В реальной жизни здесь был бы fetch
                 // const response = await fetch(url);
                 // const data = await response.json();
                 
-                const data = mockPhotos; // Используем мок-данные
+                galleryPhotos.forEach((photo, index) => {
+                    const card = createGalleryCard(photo.url, photo.text, index);
+                    galleryContainer.appendChild(card);
+                });
                 
-                if (data.response && data.response.items) {
-                    data.response.items.forEach(photo => {
-                        const bestSize = photo.sizes.find(size => size.type === 'x' || size.type === 'y' || size.type === 'z' || size.type === 'm' || size.type === 's');
-                        if (bestSize) {
-                            const card = createGalleryCard(bestSize.url, photo.text);
-                            galleryContainer.appendChild(card);
-                        }
-                    });
-                } else {
-                    console.error("Ошибка при получении фото из ВК:", data.error);
-                }
             } catch (error) {
                 console.error("Ошибка при загрузке фото из ВК:", error);
             } finally {
@@ -283,17 +358,18 @@
         }
 
         // Вспомогательные функции для UI
-        function createGalleryCard(imageUrl, title) {
+        function createGalleryCard(imageUrl, title, index) {
             const card = document.createElement('div');
-            card.className = 'bg-white rounded-3xl overflow-hidden container-shadow card';
+            card.className = 'bg-white p-6 rounded-3xl overflow-hidden container-shadow card cursor-pointer';
             card.innerHTML = `
                 <div class="aspect-w-16 aspect-h-9 w-full">
-                    <img src="${imageUrl}" alt="${title}" class="w-full h-full object-cover">
+                    <img src="${imageUrl}" alt="${title}" class="w-full h-full object-cover rounded-2xl">
                 </div>
                 <div class="p-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-2">${title}</h3>
                 </div>
             `;
+            card.addEventListener('click', () => openModal(index));
             return card;
         }
 
@@ -317,6 +393,34 @@
                 deleteButton.addEventListener('click', () => deleteDoc(doc(db, `/artifacts/${appId}/public/data/reviews`, id)));
             }
             return card;
+        }
+        
+        // Функции для модального окна
+        function openModal(index) {
+            if (index < 0 || index >= galleryPhotos.length) return;
+            currentPhotoIndex = index;
+            modalImage.src = galleryPhotos[currentPhotoIndex].url;
+            modalImage.alt = galleryPhotos[currentPhotoIndex].text;
+            modalInfo.textContent = galleryPhotos[currentPhotoIndex].text;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        function showNextPhoto() {
+            currentPhotoIndex = (currentPhotoIndex + 1) % galleryPhotos.length;
+            modalImage.src = galleryPhotos[currentPhotoIndex].url;
+            modalImage.alt = galleryPhotos[currentPhotoIndex].text;
+            modalInfo.textContent = galleryPhotos[currentPhotoIndex].text;
+        }
+
+        function showPrevPhoto() {
+            currentPhotoIndex = (currentPhotoIndex - 1 + galleryPhotos.length) % galleryPhotos.length;
+            modalImage.src = galleryPhotos[currentPhotoIndex].url;
+            modalImage.alt = galleryPhotos[currentPhotoIndex].text;
+            modalInfo.textContent = galleryPhotos[currentPhotoIndex].text;
         }
 
         // Обработка форм
@@ -414,21 +518,33 @@
     </script>
 
     <!-- Шапка сайта -->
-    <header class="bg-white shadow-md py-4 z-50 sticky top-0">
-        <div class="container mx-auto px-6 flex items-center justify-between">
+    <header class="bg-white shadow-xl py-6 z-50 sticky top-0">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
             <!-- Логотип "Аниматоры БУМ" -->
-            <a href="#" class="text-3xl font-extrabold text-orange-500 flex items-center gap-2">
+            <a href="#" class="text-3xl font-extrabold text-orange-500 flex items-center gap-2 mb-2 md:mb-0">
                 <i class="fas fa-magic text-4xl text-blue-500"></i> Аниматоры БУМ
             </a>
 
             <!-- Навигационное меню для десктопа -->
             <nav class="hidden md:flex items-center space-x-6">
                 <a href="#animators" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Аниматоры</a>
-                <a href="#services" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Другие услуги</a>
-                <a href="#gallery" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Галерея</a>
-                <a href="#reviews" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Отзывы</a>
-                <a href="#contact" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Контакты</a>
+                <a href="#services" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Шоу</a>
+                <a href="#services" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Квесты</a>
+                <a href="#services" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Мастер-классы</a>
+                <a href="#prices" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Цены</a>
             </nav>
+
+            <!-- Контакты и социальные сети -->
+            <div class="hidden md:flex flex-col items-end space-y-2">
+                <a href="tel:+79001234567" class="text-gray-700 hover:text-orange-500 font-bold transition-colors duration-200">
+                    <i class="fas fa-phone mr-2"></i> +7 (900) 123-45-67
+                </a>
+                <div class="flex items-center space-x-3 text-2xl">
+                    <a href="https://wa.me/79001234567" target="_blank" class="text-gray-600 hover:text-green-500 transition-colors duration-200"><i class="fab fa-whatsapp"></i></a>
+                    <a href="https://t.me/your_telegram" target="_blank" class="text-gray-600 hover:text-blue-400 transition-colors duration-200"><i class="fab fa-telegram-plane"></i></a>
+                    <a href="https://vk.com/your_vk" target="_blank" class="text-gray-600 hover:text-blue-500 transition-colors duration-200"><i class="fab fa-vk"></i></a>
+                </div>
+            </div>
 
             <!-- Кнопка-гамбургер для мобильного меню -->
             <button id="mobile-menu-button" class="md:hidden text-gray-700 hover:text-orange-500 focus:outline-none">
@@ -438,22 +554,29 @@
     </header>
 
     <!-- Мобильное меню (off-canvas) -->
-    <div id="mobile-menu" class="off-canvas-menu fixed top-0 right-0 h-full bg-white shadow-xl z-50 flex flex-col p-8 md:hidden">
+    <div id="mobile-menu" class="off-canvas-menu fixed top-0 right-0 h-full shadow-xl z-50 flex flex-col p-8 md:hidden bg-gradient-to-br from-pink-400 to-yellow-300">
         <div class="flex justify-end mb-8">
-            <button id="close-menu-button" class="text-gray-700 hover:text-orange-500 focus:outline-none">
+            <button id="close-menu-button" class="text-white hover:text-orange-500 focus:outline-none drop-shadow-lg">
                 <i class="fas fa-times fa-2x"></i>
             </button>
         </div>
         <nav class="flex flex-col space-y-6 text-xl">
-            <a href="#animators" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Аниматоры</a>
-            <a href="#services" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Другие услуги</a>
-            <a href="#gallery" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Галерея</a>
-            <a href="#reviews" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Отзывы</a>
-            <a href="#contact" class="text-gray-800 hover:text-orange-500 font-semibold transition-colors duration-200">Контакты</a>
-            <a href="tel:+79001234567" class="mt-4 text-gray-700 font-semibold hover:text-blue-500 transition-colors duration-200">
-                +7 (900) 123-45-67
-            </a>
+            <a href="#animators" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Аниматоры</a>
+            <a href="#services" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Шоу</a>
+            <a href="#services" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Квесты</a>
+            <a href="#services" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Мастер-классы</a>
+            <a href="#prices" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Цены</a>
         </nav>
+        <div class="mt-8 pt-8 border-t border-white/50 space-y-4">
+            <a href="tel:+79001234567" class="mt-4 text-white font-semibold hover:text-blue-500 transition-colors duration-200 drop-shadow-lg flex items-center gap-2">
+                <i class="fas fa-phone"></i> +7 (900) 123-45-67
+            </a>
+            <div class="flex space-x-4 justify-center">
+                <a href="https://wa.me/79001234567" target="_blank" class="text-white hover:text-green-500 transition-colors duration-200 text-3xl"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://t.me/your_telegram" target="_blank" class="text-white hover:text-blue-400 transition-colors duration-200 text-3xl"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://vk.com/your_vk" target="_blank" class="text-white hover:text-blue-500 transition-colors duration-200 text-3xl"><i class="fab fa-vk"></i></a>
+            </div>
+        </div>
     </div>
 
     <!-- Задний фон для меню -->
@@ -463,14 +586,15 @@
     <main class="flex-grow flex flex-col items-center p-4">
         <div class="relative w-full h-96 md:h-[600px] rounded-3xl overflow-hidden container-shadow hero-bg text-center mb-12">
             <div class="relative z-20 flex flex-col items-center justify-center h-full text-white px-6">
+                
                 <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-4 drop-shadow-lg">
-                    Праздник, который запомнится!
+                    Лучший день рождения в жизни!
                 </h1>
                 <p class="text-xl md:text-2xl font-medium mb-8 max-w-2xl drop-shadow-md">
-                    Лучшие аниматоры для детского дня рождения, утренника или любого другого торжества.
+                    Окунитесь в мир веселья и волшебства с нашими профессиональными аниматорами.
                 </p>
                 <a href="#contact" class="bg-white text-orange-500 font-bold py-4 px-8 rounded-full shadow-xl hover:bg-gray-200 transition-colors duration-300 transform hover:scale-105">
-                    Заказать шоу
+                    Заказать праздник
                 </a>
             </div>
         </div>
@@ -480,28 +604,28 @@
             <div class="container mx-auto px-6 text-center">
                 <h2 class="text-4xl md:text-5xl font-extrabold text-blue-600 mb-12">Наши аниматоры</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <div class="bg-white p-8 rounded-3xl container-shadow card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card animator-card">
                         <img src="https://placehold.co/400x400/FFB6C1/FFF?text=Эльза" alt="Эльза" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Принцесса Эльза</h3>
                         <p class="text-gray-600">Погрузимся в волшебный мир с песнями и танцами!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card animator-card">
                         <img src="https://placehold.co/400x400/ADD8E6/FFF?text=Человек-паук" alt="Человек-паук" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Человек-паук</h3>
                         <p class="text-gray-600">Научимся лазать по стенам и спасать мир от злодеев!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card animator-card">
                         <img src="https://placehold.co/400x400/98FB98/FFF?text=Пират+Джек" alt="Пират Джек" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Пират Джек</h3>
-                        <p class="text-gray-600">Отправимся в морское приключение за сокровищами!</p>
+                        <p class="text-600">Отправимся в морское приключение за сокровищами!</p>
                     </div>
                     <!-- Дополнительные аниматоры, скрытые по умолчанию -->
-                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden animator-card">
                         <img src="https://placehold.co/400x400/800080/FFF?text=Роботы" alt="Роботы" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Аниматоры-роботы</h3>
                         <p class="text-gray-600">Погружение в мир технологий и футуристических приключений!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden animator-card">
                         <img src="https://placehold.co/400x400/FFC0CB/FFF?text=Куклы+ЛОЛ" alt="Куклы ЛОЛ" class="w-full h-auto rounded-2xl mb-4">
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Куклы LOL Surprise</h3>
                         <p class="text-gray-600">Организуем самую модную вечеринку с любимыми куколками!</p>
@@ -513,33 +637,33 @@
             </div>
         </section>
 
-        <!-- Новый раздел: Другие услуги -->
+        <!-- Новый раздел: Наши услуги и развлечения -->
         <section id="services" class="py-12 mt-12 w-full">
             <div class="container mx-auto px-6 text-center">
-                <h2 class="text-4xl md:text-5xl font-extrabold text-orange-600 mb-12">Другие услуги</h2>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-orange-600 mb-12">Наши услуги и развлечения</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <div class="bg-white p-8 rounded-3xl container-shadow card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card service-card">
                         <i class="fas fa-flask text-6xl text-blue-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Научное шоу</h3>
                         <p class="text-gray-600">Увлекательные и безопасные эксперименты, которые удивят даже взрослых!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card service-card">
                         <i class="fas fa-soap text-6xl text-pink-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Шоу мыльных пузырей</h3>
                         <p class="text-gray-600">Огромные, завораживающие пузыри, в которых можно оказаться!</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card service-card">
                         <i class="fas fa-paint-brush text-6xl text-purple-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Аквагрим</h3>
                         <p class="text-gray-600">Превратимся в любимых героев с помощью красочного и безопасного грима.</p>
                     </div>
                     <!-- Дополнительные услуги, скрытые по умолчанию -->
-                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden service-card">
                         <i class="fas fa-magic text-6xl text-orange-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Фокусник</h3>
                         <p class="text-gray-600">Невероятные трюки и иллюзии, которые создадут атмосферу волшебства.</p>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden">
+                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden service-card">
                         <i class="fas fa-theater-masks text-6xl text-teal-500 mb-4"></i>
                         <h3 class="text-3xl font-bold text-gray-800 mb-4">Ростовые куклы</h3>
                         <p class="text-gray-600">Любимые персонажи мультфильмов в полный рост, готовые обниматься и веселиться!</p>
@@ -552,6 +676,51 @@
         </section>
 
     </main>
+    
+    <!-- Новый раздел "Цены" -->
+    <section id="prices" class="py-20 bg-blue-100">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-5xl font-extrabold text-blue-600 mb-12">Наши цены</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Пакет "Минимальный" -->
+                <div class="bg-white p-8 rounded-3xl container-shadow card">
+                    <h3 class="text-3xl font-bold text-blue-600 mb-4">Пакет "Мини"</h3>
+                    <p class="text-gray-700 mb-6">Программа на 1 час</p>
+                    <div class="text-5xl font-extrabold text-orange-500 mb-4">3 000 руб.</div>
+                    <ul class="text-left space-y-2 text-gray-600">
+                        <li><i class="fas fa-check-circle text-green-500"></i> Один аниматор</li>
+                        <li><i class="fas fa-check-circle text-green-500"></i> Игровая программа</li>
+                        <li><i class="fas fa-check-circle text-green-500"></i> Музыкальное сопровождение</li>
+                    </ul>
+                </div>
+                <!-- Пакет "Стандарт" -->
+                <div class="bg-white p-8 rounded-3xl container-shadow card border-4 border-orange-500">
+                    <h3 class="text-3xl font-bold text-orange-500 mb-4">Пакет "Стандарт"</h3>
+                    <p class="text-gray-700 mb-6">Программа на 2 часа</p>
+                    <div class="text-5xl font-extrabold text-blue-600 mb-4">5 500 руб.</div>
+                    <ul class="text-left space-y-2 text-gray-600">
+                        <li><i class="fas fa-check-circle text-green-500"></i> Один аниматор</li>
+                        <li><i class="fas fa-check-circle text-green-500"></i> Расширенная игровая программа</li>
+                        <li><i class="fas fa-check-circle text-green-500"></i> Шоу мыльных пузырей ИЛИ аквагрим</li>
+                        <li><i class="fas fa-check-circle text-green-500"></i> Тематический реквизит</li>
+                    </ul>
+                </div>
+                <!-- Пакет "Премиум" -->
+                <div class="bg-white p-8 rounded-3xl container-shadow card">
+                    <h3 class="text-3xl font-bold text-blue-600 mb-4">Пакет "Премиум"</h3>
+                    <p class="text-gray-700 mb-6">Программа на 3 часа</p>
+                    <div class="text-5xl font-extrabold text-orange-500 mb-4">8 000 руб.</div>
+                    <ul class="text-left space-y-2 text-gray-600">
+                        <li><i class="fas fa-check-circle text-green-500"></i> Два аниматора</li>
+                        <li><i class="fas fa-check-circle text-green-500"></i> Полная игровая программа</li>
+                        <li><i class="fas fa-check-circle text-green-500"></i> Шоу мыльных пузырей И аквагрим</li>
+                        <li><i class="fas fa-check-circle text-green-500"></i> Мастер-класс на выбор</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="text-center text-gray-600 mt-8">Цены могут варьироваться в зависимости от выбранных услуг и удалённости.</p>
+        </div>
+    </section>
 
     <!-- Галерея "Наши герои" -->
     <section id="gallery" class="py-20 bg-white">
@@ -643,6 +812,15 @@
             <p class="mt-4">&copy; 2024 Аниматоры "Бум". Все права защищены.</p>
         </div>
     </footer>
+
+    <!-- Модальное окно для просмотра фото -->
+    <div id="photo-modal" class="modal">
+        <span id="close-modal" class="close-btn">&times;</span>
+        <span id="prev-photo" class="nav-btn prev-btn">&lt;</span>
+        <img id="modal-image" class="modal-content" src="" alt="">
+        <span id="next-photo" class="nav-btn next-btn">&gt;</span>
+        <div id="modal-info" class="modal-info"></div>
+    </div>
     
     <!-- Tawk.to чат (вставлять здесь) -->
     <script>
