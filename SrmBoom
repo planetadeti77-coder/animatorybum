@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM для Аниматоров (Google Sheets)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            height: 100vh;
+        }
+        .sidebar {
+            background-color: #1f2937;
+            color: white;
+        }
+        .content {
+            background-color: #ffffff;
+            overflow-y: auto;
+        }
+        .nav-link {
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-day {
+            min-height: 120px;
+        }
+        .calendar-day-header {
+            font-size: 0.8rem;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        .form-input {
+            @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
+        }
+        .btn-primary {
+            @apply inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+        }
+        .btn-secondary {
+            @apply inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+        }
+         .btn-danger {
+            @apply inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="google-sheets-setup" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-100">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-4">Подключение к Google Sheets</h2>
+            <p class="text-gray-600 mb-6">Авторизуйтесь и введите ID вашей Google Таблицы для синхронизации данных.</p>
+            <div class="mb-4">
+                <input type="text" id="spreadsheet_id_input" placeholder="Введите Spreadsheet ID" class="form-input text-center">
+            </div>
+            <div class="flex justify-center space-x-4">
+                <button id="authorize_button" class="btn-primary" style="visibility: hidden;">Авторизоваться</button>
+                <button id="signout_button" class="btn-secondary" style="visibility: hidden;">Выйти</button>
+            </div>
+            <button id="load_data_button" class="btn-primary w-full mt-4">Загрузить данные</button>
+        </div>
+    </div>
+    
+    <div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75 hidden">
+        <div class="loader"></div>
+    </div>
+
+    <div id="app" class="main-container hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar flex flex-col p-4">
+            <h1 class="text-2xl font-bold mb-8 text-center text-indigo-400">Аниматор CRM</h1>
+            <nav class="flex flex-col space-y-2">
+                <a href="#" id="nav-dashboard" class="nav-link active px-4 py-2 rounded-lg flex items-center"><i class="fas fa-tachometer-alt w-6 mr-2"></i>Дашборд</a>
+                <a href="#" id="nav-calendar" class="nav-link px-4 py-2 rounded-lg flex items-center"><i class="fas fa-calendar-alt w-6 mr-2"></i>Календарь</a>
+                <a href="#" id="nav-performers" class="nav-link px-4 py-2 rounded-lg flex items-center"><i class="fas fa-user-friends w-6 mr-2"></i>Исполнители</a>
+                <a href="#" id="nav-clients" class="nav-link px-4 py-2 rounded-lg flex items-center"><i class="fas fa-address-book w-6 mr-2"></i>Клиенты</a>
+                <a href="#" id="nav-services" class="nav-link px-4 py-2 rounded-lg flex items-center"><i class="fas fa-magic w-6 mr-2"></i>Услуги</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main id="main-content" class="content p-8">
+            <!-- All views are the same as before -->
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="page-view">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Дашборд</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-blue-100 p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold text-blue-800">Всего исполнителей</h3>
+                        <p id="stats-performers" class="text-4xl font-bold text-blue-900">0</p>
+                    </div>
+                    <div class="bg-green-100 p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold text-green-800">Всего клиентов</h3>
+                        <p id="stats-clients" class="text-4xl font-bold text-green-900">0</p>
+                    </div>
+                    <div class="bg-purple-100 p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold text-purple-800">Мероприятий в этом месяце</h3>
+                        <p id="stats-events" class="text-4xl font-bold text-purple-900">0</p>
+                    </div>
+                </div>
+                <div class="mt-8 bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Ближайшие мероприятия</h3>
+                    <div id="upcoming-events-list" class="space-y-4">
+                        <p class="text-gray-500">Нет предстоящих мероприятий.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div id="view-calendar" class="page-view hidden">
+                 <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">Календарь</h2>
+                    <div class="flex items-center">
+                        <button id="prev-month" class="p-2 rounded-full hover:bg-gray-200"><i class="fas fa-chevron-left"></i></button>
+                        <h3 id="current-month-year" class="text-xl font-semibold mx-4 w-48 text-center"></h3>
+                        <button id="next-month" class="p-2 rounded-full hover:bg-gray-200"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <button id="add-event-btn" class="btn-primary">Добавить событие</button>
+                </div>
+                <div class="calendar-grid-header calendar-grid border-b-2 pb-2 mb-2 font-semibold text-gray-600">
+                    <div>Вс</div><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div>
+                </div>
+                <div id="calendar-body" class="calendar-grid"></div>
+            </div>
+            
+            <!-- Performers View -->
+            <div id="view-performers" class="page-view hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">Исполнители</h2>
+                    <button id="add-performer-btn" class="btn-primary">Добавить исполнителя</button>
+                </div>
+                <div id="performers-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <!-- Clients View -->
+            <div id="view-clients" class="page-view hidden">
+                 <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">Клиенты</h2>
+                    <button id="add-client-btn" class="btn-primary">Добавить клиента</button>
+                </div>
+                <div id="clients-list" class="space-y-4"></div>
+            </div>
+
+            <!-- Services View -->
+            <div id="view-services" class="page-view hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">Услуги</h2>
+                    <button id="add-service-btn" class="btn-primary">Добавить услугу</button>
+                </div>
+                <div id="services-list" class="bg-white shadow overflow-hidden rounded-md">
+                    <ul class="divide-y divide-gray-200"></ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals (structure is the same as before) -->
+    <!-- Performer Modal -->
+    <div id="performer-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform scale-95">
+            <h3 class="text-xl font-semibold mb-4" id="performer-modal-title">Добавить исполнителя</h3>
+            <form id="performer-form">
+                <input type="hidden" id="performer-id">
+                <div class="space-y-4">
+                    <div>
+                        <label for="performer-name" class="block text-sm font-medium text-gray-700">Имя</label>
+                        <input type="text" id="performer-name" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="performer-contact" class="block text-sm font-medium text-gray-700">Телефон</label>
+                        <input type="tel" id="performer-contact" class="form-input" required>
+                    </div>
+                     <div>
+                        <label for="performer-social" class="block text-sm font-medium text-gray-700">Соцсети (Instagram, VK и т.д.)</label>
+                        <input type="text" id="performer-social" class="form-input">
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" class="btn-secondary" id="cancel-performer-modal">Отмена</button>
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Client Modal -->
+    <div id="client-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform scale-95">
+            <h3 class="text-xl font-semibold mb-4" id="client-modal-title">Добавить клиента</h3>
+            <form id="client-form">
+                <input type="hidden" id="client-id">
+                <div class="space-y-4">
+                    <div>
+                        <label for="client-name" class="block text-sm font-medium text-gray-700">Имя клиента</label>
+                        <input type="text" id="client-name" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="client-contact" class="block text-sm font-medium text-gray-700">Контакт (телефон/email)</label>
+                        <input type="text" id="client-contact" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="client-date" class="block text-sm font-medium text-gray-700">Дата праздника</label>
+                        <input type="date" id="client-date" class="form-input" required>
+                    </div>
+                     <div>
+                        <label for="client-city" class="block text-sm font-medium text-gray-700">Город</label>
+                        <input type="text" id="client-city" class="form-input">
+                    </div>
+                     <div>
+                        <label for="client-notes" class="block text-sm font-medium text-gray-700">Заметки</label>
+                        <textarea id="client-notes" rows="3" class="form-input"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" class="btn-secondary" id="cancel-client-modal">Отмена</button>
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Service Modal -->
+    <div id="service-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform scale-95">
+            <h3 class="text-xl font-semibold mb-4" id="service-modal-title">Добавить услугу</h3>
+            <form id="service-form">
+                <input type="hidden" id="service-id">
+                <div class="space-y-4">
+                    <div>
+                        <label for="service-name" class="block text-sm font-medium text-gray-700">Название услуги</label>
+                        <input type="text" id="service-name" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="service-price" class="block text-sm font-medium text-gray-700">Цена (₽)</label>
+                        <input type="number" id="service-price" class="form-input" required>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" class="btn-secondary" id="cancel-service-modal">Отмена</button>
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Event Modal -->
+    <div id="event-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform scale-95">
+            <h3 class="text-xl font-semibold mb-4" id="event-modal-title">Добавить событие</h3>
+            <form id="event-form">
+                <input type="hidden" id="event-id">
+                 <div class="space-y-4">
+                    <div>
+                        <label for="event-title" class="block text-sm font-medium text-gray-700">Название события</label>
+                        <input type="text" id="event-title" class="form-input" required placeholder="Например, День Рождения Алисы">
+                    </div>
+                    <div>
+                        <label for="event-date" class="block text-sm font-medium text-gray-700">Дата</label>
+                        <input type="date" id="event-date" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="event-client" class="block text-sm font-medium text-gray-700">Клиент</label>
+                        <select id="event-client" class="form-input" required></select>
+                    </div>
+                    <div>
+                        <label for="event-performer" class="block text-sm font-medium text-gray-700">Исполнитель</label>
+                        <select id="event-performer" class="form-input" required></select>
+                    </div>
+                     <div>
+                        <label for="event-service" class="block text-sm font-medium text-gray-700">Услуга</label>
+                        <select id="event-service" class="form-input" required></select>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-between">
+                    <div>
+                        <button type="button" class="btn-danger hidden" id="delete-event-btn">Удалить</button>
+                    </div>
+                    <div class="flex space-x-3">
+                         <button type="button" class="btn-secondary" id="cancel-event-modal">Отмена</button>
+                        <button type="submit" class="btn-primary">Сохранить</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+<script type="module">
+    // --- Google Sheets API Configuration ---
+    // ВАЖНО: Эти значения вы должны получить из вашей Google Cloud Console.
+    // 1. Создайте проект на https://console.cloud.google.com/
+    // 2. Включите "Google Sheets API".
+    // 3. Создайте "API key" в разделе "Credentials" и вставьте его ниже.
+    // 4. Создайте "OAuth 2.0 Client ID" (тип Web Application).
+    //    - В "Authorized JavaScript origins" добавьте URL, где будет размещено приложение.
+    //    - В "Authorized redirect URIs" также добавьте URL.
+    // 5. Вставьте "Client ID" ниже.
+    const API_KEY = 'YOUR_API_KEY'; // <-- ВАШ API КЛЮЧ
+    const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com'; // <-- ВАШ CLIENT ID
+    const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+    
+    let tokenClient;
+    let gapiInited = false;
+    let gisInited = false;
+    let SPREADSHEET_ID = '';
+
+    // Global state
+    let performers = [];
+    let clients = [];
+    let services = [];
+    let events = [];
+    let currentDate = new Date();
+
+    // DOM Elements
+    const setupView = document.getElementById('google-sheets-setup');
+    const appView = document.getElementById('app');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const authorizeButton = document.getElementById('authorize_button');
+    const signoutButton = document.getElementById('signout_button');
+    const spreadsheetIdInput = document.getElementById('spreadsheet_id_input');
+    const loadDataButton = document.getElementById('load_data_button');
+    const views = document.querySelectorAll('.page-view');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const calendarBody = document.getElementById('calendar-body');
+    const currentMonthYearEl = document.getElementById('current-month-year');
+    
+    // --- GAPI & GIS Initialization ---
+    window.gapiLoaded = function() {
+        gapi.load('client', initializeGapiClient);
+    };
+
+    async function initializeGapiClient() {
+        await gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+        });
+        gapiInited = true;
+        maybeEnableButtons();
+    }
+
+    window.gisLoaded = function() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: SCOPES,
+            callback: '', // Will be set dynamically
+        });
+        gisInited = true;
+        maybeEnableButtons();
+    };
+    
+    function maybeEnableButtons() {
+        if (gapiInited && gisInited) {
+            authorizeButton.style.visibility = 'visible';
+        }
+    }
+
+    // --- Authentication Flow ---
+    authorizeButton.addEventListener('click', () => {
+        tokenClient.callback = (resp) => {
+            if (resp.error !== undefined) {
+                throw (resp);
+            }
+            document.getElementById('signout_button').style.visibility = 'visible';
+            document.getElementById('authorize_button').innerText = 'Обновить токен';
+        };
+
+        if (gapi.client.getToken() === null) {
+            tokenClient.requestAccessToken({ prompt: 'consent' });
+        } else {
+            tokenClient.requestAccessToken({ prompt: '' });
+        }
+    });
+
+    signoutButton.addEventListener('click', () => {
+        const token = gapi.client.getToken();
+        if (token !== null) {
+            google.accounts.oauth2.revoke(token.access_token);
+            gapi.client.setToken('');
+            signoutButton.style.visibility = 'hidden';
+            authorizeButton.innerText = 'Авторизоваться';
+            appView.classList.add('hidden');
+            setupView.classList.remove('hidden');
+        }
+    });
+    
+    // --- Data Loading ---
+    loadDataButton.addEventListener('click', () => {
+        SPREADSHEET_ID = spreadsheetIdInput.value.trim();
+        if (!SPREADSHEET_ID) {
+            alert('Пожалуйста, введите Spreadsheet ID.');
+            return;
+        }
+        if (gapi.client.getToken() === null) {
+            alert('Пожалуйста, сначала авторизуйтесь.');
+            return;
+        }
+        setupView.classList.add('hidden');
+        appView.classList.remove('hidden');
+        loadAllData();
+    });
+
+    async function loadAllData() {
+        loadingOverlay.classList.remove('hidden');
+        try {
+            const [performersData, clientsData, servicesData, eventsData] = await Promise.all([
+                readSheet('Performers'),
+                readSheet('Clients'),
+                readSheet('Services'),
+                readSheet('Events')
+            ]);
+
+            performers = mapSheetData(performersData, ['id', 'name', 'contact', 'social']);
+            clients = mapSheetData(clientsData, ['id', 'name', 'contact', 'date', 'city', 'notes']);
+            services = mapSheetData(servicesData, ['id', 'name', 'price']);
+            events = mapSheetData(eventsData, ['id', 'title', 'date', 'clientId', 'performerId', 'serviceId']);
+
+            renderAll();
+        } catch (err) {
+            console.error('Error loading data:', err);
+            alert('Ошибка загрузки данных. Проверьте консоль, ID таблицы и названия листов.');
+            appView.classList.add('hidden');
+            setupView.classList.remove('hidden');
+        } finally {
+            loadingOverlay.classList.add('hidden');
+        }
+    }
+    
+    function renderAll() {
+        renderPerformers();
+        renderClients();
+        renderServices();
+        renderCalendar();
+        updateDashboardStats();
+        renderUpcomingEvents();
+    }
+
+    function mapSheetData(data, headers) {
+        if (!data || data.length < 2) return []; // Expecting header + data
+        return data.slice(1).map((row, index) => {
+            const obj = { rowIndex: index + 2 }; // +2 because of header and 0-based index
+            headers.forEach((header, i) => {
+                obj[header] = row[i] || '';
+            });
+            return obj;
+        });
+    }
+
+    // --- Google Sheets CRUD Functions ---
+    async function readSheet(sheetName) {
+        const response = await gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: sheetName,
+        });
+        return response.result.values || [];
+    }
+
+    async function addSheetRow(sheetName, values) {
+        await gapi.client.sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: sheetName,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [values],
+            },
+        });
+    }
+
+    async function updateSheetRow(sheetName, rowIndex, values) {
+        await gapi.client.sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `${sheetName}!A${rowIndex}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [values],
+            },
+        });
+    }
+
+    async function deleteSheetRow(sheetName, rowIndex) {
+        const sheetId = await getSheetIdByName(sheetName);
+        if (sheetId === null) {
+            throw new Error(`Sheet ${sheetName} not found.`);
+        }
+        await gapi.client.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex - 1,
+                            endIndex: rowIndex,
+                        },
+                    },
+                }],
+            },
+        });
+    }
+
+    let sheetNameToIdMap = {};
+    async function getSheetIdByName(sheetName) {
+        if (sheetNameToIdMap[sheetName]) {
+            return sheetNameToIdMap[sheetName];
+        }
+        const response = await gapi.client.sheets.spreadsheets.get({
+            spreadsheetId: SPREADSHEET_ID,
+        });
+        const sheet = response.result.sheets.find(s => s.properties.title === sheetName);
+        if (sheet) {
+            const sheetId = sheet.properties.sheetId;
+            sheetNameToIdMap[sheetName] = sheetId;
+            return sheetId;
+        }
+        return null;
+    }
+    
+    // All render functions are the same as before.
+    // They are omitted here for brevity but are present in the full code.
+    // ... renderPerformers, renderClients, renderServices, renderCalendar, etc. ...
+    
+    // Render functions (same as before)
+    function renderPerformers() {
+        const list = document.getElementById('performers-list');
+        list.innerHTML = performers.length ? performers.map(p => `
+            <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                <h4 class="text-lg font-bold text-gray-800">${p.name}</h4>
+                <p class="text-gray-600"><i class="fas fa-phone-alt mr-2"></i>${p.contact}</p>
+                <p class="text-gray-600 truncate"><i class="fas fa-link mr-2"></i>${p.social || 'Нет данных'}</p>
+                <div class="mt-3 flex space-x-2 text-gray-500">
+                     <a href="https://wa.me/${(p.contact || '').replace(/\D/g,'')}" target="_blank" class="hover:text-green-500" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                     <a href="https://t.me/${(p.social || '').replace('@','')}" target="_blank" class="hover:text-blue-500" title="Telegram"><i class="fab fa-telegram-plane"></i></a>
+                </div>
+                <div class="mt-4 flex justify-end space-x-2">
+                    <button class="edit-performer-btn text-blue-500 hover:text-blue-700" data-id="${p.id}"><i class="fas fa-edit"></i></button>
+                    <button class="delete-performer-btn text-red-500 hover:text-red-700" data-id="${p.id}"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        `).join('') : '<p class="text-gray-500">Нет добавленных исполнителей.</p>';
+    }
+
+    function renderClients() {
+        const list = document.getElementById('clients-list');
+        list.innerHTML = clients.length ? clients.map(c => `
+            <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 flex justify-between items-start">
+                <div>
+                    <h4 class="text-lg font-bold text-gray-800">${c.name}</h4>
+                    <p class="text-gray-600"><i class="fas fa-phone-alt mr-2 text-sm"></i>${c.contact}</p>
+                    <p class="text-gray-600"><i class="fas fa-map-marker-alt mr-2 text-sm"></i>${c.city || 'Не указан'}</p>
+                    <p class="text-gray-600"><i class="fas fa-calendar-day mr-2 text-sm"></i>${new Date(c.date).toLocaleDateString()}</p>
+                    <p class="text-sm text-gray-500 mt-2 bg-gray-50 p-2 rounded">${c.notes || 'Нет заметок'}</p>
+                </div>
+                 <div class="flex flex-col items-end">
+                    <div class="flex-shrink-0 flex space-x-2">
+                        <button class="edit-client-btn text-blue-500 hover:text-blue-700" data-id="${c.id}"><i class="fas fa-edit"></i></button>
+                        <button class="delete-client-btn text-red-500 hover:text-red-700" data-id="${c.id}"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        `).join('') : '<p class="text-gray-500">Нет добавленных клиентов.</p>';
+    }
+
+    function renderServices() {
+        const list = document.getElementById('services-list').querySelector('ul');
+        list.innerHTML = services.length ? services.map(s => `
+            <li class="px-6 py-4 flex items-center justify-between">
+                <div>
+                    <p class="text-md font-medium text-gray-900">${s.name}</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <p class="text-md text-gray-700 font-semibold">${s.price} ₽</p>
+                    <button class="edit-service-btn text-blue-500 hover:text-blue-700" data-id="${s.id}"><i class="fas fa-edit"></i></button>
+                    <button class="delete-service-btn text-red-500 hover:text-red-700" data-id="${s.id}"><i class="fas fa-trash"></i></button>
+                </div>
+            </li>
+        `).join('') : '<li class="px-6 py-4 text-gray-500">Нет добавленных услуг.</li>';
+    }
+    
+    function renderCalendar() {
+        calendarBody.innerHTML = '';
+        currentMonthYearEl.textContent = currentDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            calendarBody.innerHTML += '<div class="bg-gray-50"></div>';
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'calendar-day border border-gray-200 p-2 relative hover:bg-indigo-50';
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            let headerClass = 'calendar-day-header font-semibold';
+            const today = new Date();
+            if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+                 headerClass += ' text-white bg-indigo-600 rounded-full w-6 h-6 flex items-center justify-center';
+            }
+            
+            dayEl.innerHTML = `<div class="${headerClass}">${day}</div>`;
+            dayEl.dataset.date = dateStr;
+
+            const dayEvents = events.filter(e => e.date === dateStr);
+            if (dayEvents.length > 0) {
+                const eventsContainer = document.createElement('div');
+                eventsContainer.className = 'mt-1 space-y-1';
+                dayEvents.forEach(event => {
+                    const client = clients.find(c => c.id === event.clientId);
+                    const eventPill = document.createElement('div');
+                    eventPill.className = 'text-xs bg-blue-200 text-blue-800 p-1 rounded truncate cursor-pointer';
+                    eventPill.textContent = client ? client.name : event.title;
+                    eventPill.title = event.title;
+                    eventPill.dataset.eventId = event.id;
+                    eventPill.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openEventModal(event.id);
+                    });
+                    eventsContainer.appendChild(eventPill);
+                });
+                dayEl.appendChild(eventsContainer);
+            }
+            
+            dayEl.addEventListener('click', () => openEventModal(null, dateStr));
+            calendarBody.appendChild(dayEl);
+        }
+    }
+    
+    function updateDashboardStats() {
+        document.getElementById('stats-performers').textContent = performers.length;
+        document.getElementById('stats-clients').textContent = clients.length;
+
+        const thisMonthEvents = events.filter(e => {
+            const eventDate = new Date(e.date);
+            return eventDate.getMonth() === currentDate.getMonth() && eventDate.getFullYear() === currentDate.getFullYear();
+        });
+        document.getElementById('stats-events').textContent = thisMonthEvents.length;
+    }
+    
+    function renderUpcomingEvents() {
+        const list = document.getElementById('upcoming-events-list');
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        
+        const upcoming = events
+            .filter(e => new Date(e.date) >= today)
+            .sort((a,b) => new Date(a.date) - new Date(b.date))
+            .slice(0, 5);
+            
+        if (upcoming.length === 0) {
+            list.innerHTML = '<p class="text-gray-500">Нет предстоящих мероприятий.</p>';
+            return;
+        }
+        
+        list.innerHTML = upcoming.map(event => {
+            const client = clients.find(c => c.id === event.clientId);
+            const performer = performers.find(p => p.id === event.performerId);
+            return `
+                <div class="border-l-4 border-indigo-500 pl-4 py-2">
+                    <p class="font-bold text-gray-800">${event.title}</p>
+                    <p class="text-sm text-gray-600">
+                        <span>${new Date(event.date).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'})}</span> |
+                        <span>Клиент: ${client ? client.name : 'N/A'}</span> |
+                        <span>Исполнитель: ${performer ? performer.name : 'N/A'}</span>
+                    </p>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Navigation (same as before)
+    function switchView(viewId) {
+        views.forEach(view => view.classList.add('hidden'));
+        document.getElementById(viewId).classList.remove('hidden');
+
+        navLinks.forEach(link => link.classList.remove('active'));
+        document.getElementById(`nav-${viewId.split('-')[1]}`).classList.add('active');
+    }
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const viewId = `view-${e.currentTarget.id.split('-')[1]}`;
+            switchView(viewId);
+        });
+    });
+
+    // Modal Handling (same as before)
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.querySelector('.modal-backdrop').classList.add('opacity-100');
+            modal.querySelector('.modal-content').classList.remove('scale-95');
+            modal.querySelector('.modal-content').classList.add('scale-100');
+        }, 10);
+    }
+    
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.querySelector('.modal-backdrop').classList.remove('opacity-100');
+        modal.querySelector('.modal-content').classList.add('scale-95');
+        modal.querySelector('.modal-content').classList.remove('scale-100');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+    
+    document.querySelectorAll('[id^="cancel-"]').forEach(btn => {
+        btn.addEventListener('click', () => closeModal(btn.closest('.fixed').id));
+    });
+
+    // --- Refactored CRUD Operations ---
+    
+    async function handleFormSubmit(sheetName, id, values) {
+        loadingOverlay.classList.remove('hidden');
+        try {
+            if (id) {
+                const item = window[sheetName.toLowerCase()].find(p => p.id === id);
+                await updateSheetRow(sheetName, item.rowIndex, values);
+            } else {
+                await addSheetRow(sheetName, values);
+            }
+            await loadAllData();
+        } catch (error) {
+            console.error(`Error saving to ${sheetName}:`, error);
+            alert(`Не удалось сохранить данные в ${sheetName}.`);
+        } finally {
+            loadingOverlay.classList.add('hidden');
+        }
+    }
+
+    async function handleDelete(sheetName, id, itemName) {
+        if (confirm(`Вы уверены, что хотите удалить ${itemName}?`)) {
+            loadingOverlay.classList.remove('hidden');
+            try {
+                const item = window[sheetName.toLowerCase()].find(p => p.id === id);
+                if (item) {
+                    await deleteSheetRow(sheetName, item.rowIndex);
+                    await loadAllData();
+                }
+            } catch (error) {
+                console.error(`Error deleting from ${sheetName}:`, error);
+                alert(`Не удалось удалить данные из ${sheetName}.`);
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+    }
+
+    // Performer
+    document.getElementById('add-performer-btn').addEventListener('click', () => {
+        document.getElementById('performer-form').reset();
+        document.getElementById('performer-id').value = '';
+        document.getElementById('performer-modal-title').textContent = 'Добавить исполнителя';
+        openModal('performer-modal');
+    });
+
+    document.getElementById('performer-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('performer-id').value;
+        const newId = id || crypto.randomUUID();
+        const values = [
+            newId,
+            document.getElementById('performer-name').value,
+            document.getElementById('performer-contact').value,
+            document.getElementById('performer-social').value,
+        ];
+        closeModal('performer-modal');
+        await handleFormSubmit('Performers', id, values);
+    });
+
+    document.getElementById('performers-list').addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.edit-performer-btn');
+        const deleteBtn = e.target.closest('.delete-performer-btn');
+        if (editBtn) {
+            const id = editBtn.dataset.id;
+            const performer = performers.find(p => p.id === id);
+            document.getElementById('performer-id').value = id;
+            document.getElementById('performer-name').value = performer.name;
+            document.getElementById('performer-contact').value = performer.contact;
+            document.getElementById('performer-social').value = performer.social;
+            document.getElementById('performer-modal-title').textContent = 'Редактировать исполнителя';
+            openModal('performer-modal');
+        }
+        if (deleteBtn) {
+            handleDelete('Performers', deleteBtn.dataset.id, 'этого исполнителя');
+        }
+    });
+    
+    // Client, Service, Event listeners are refactored similarly...
+    // Client
+     document.getElementById('add-client-btn').addEventListener('click', () => {
+        document.getElementById('client-form').reset();
+        document.getElementById('client-id').value = '';
+        document.getElementById('client-modal-title').textContent = 'Добавить клиента';
+        openModal('client-modal');
+    });
+
+    document.getElementById('client-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('client-id').value;
+        const newId = id || crypto.randomUUID();
+        const values = [
+            newId,
+            document.getElementById('client-name').value,
+            document.getElementById('client-contact').value,
+            document.getElementById('client-date').value,
+            document.getElementById('client-city').value,
+            document.getElementById('client-notes').value,
+        ];
+        closeModal('client-modal');
+        await handleFormSubmit('Clients', id, values);
+    });
+
+     document.getElementById('clients-list').addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.edit-client-btn');
+        const deleteBtn = e.target.closest('.delete-client-btn');
+        if (editBtn) {
+            const id = editBtn.dataset.id;
+            const client = clients.find(c => c.id === id);
+            document.getElementById('client-id').value = id;
+            document.getElementById('client-name').value = client.name;
+            document.getElementById('client-contact').value = client.contact;
+            document.getElementById('client-date').value = client.date;
+            document.getElementById('client-city').value = client.city;
+            document.getElementById('client-notes').value = client.notes;
+            document.getElementById('client-modal-title').textContent = 'Редактировать клиента';
+            openModal('client-modal');
+        }
+        if (deleteBtn) {
+            handleDelete('Clients', deleteBtn.dataset.id, 'этого клиента');
+        }
+    });
+
+    // Service
+    document.getElementById('add-service-btn').addEventListener('click', () => {
+        document.getElementById('service-form').reset();
+        document.getElementById('service-id').value = '';
+        document.getElementById('service-modal-title').textContent = 'Добавить услугу';
+        openModal('service-modal');
+    });
+    
+    document.getElementById('service-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('service-id').value;
+        const newId = id || crypto.randomUUID();
+        const values = [
+            newId,
+            document.getElementById('service-name').value,
+            Number(document.getElementById('service-price').value),
+        ];
+        closeModal('service-modal');
+        await handleFormSubmit('Services', id, values);
+    });
+
+    document.getElementById('services-list').addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.edit-service-btn');
+        const deleteBtn = e.target.closest('.delete-service-btn');
+        if (editBtn) {
+            const id = editBtn.dataset.id;
+            const service = services.find(s => s.id === id);
+            document.getElementById('service-id').value = id;
+            document.getElementById('service-name').value = service.name;
+            document.getElementById('service-price').value = service.price;
+            document.getElementById('service-modal-title').textContent = 'Редактировать услугу';
+            openModal('service-modal');
+        }
+        if (deleteBtn) {
+            handleDelete('Services', deleteBtn.dataset.id, 'эту услугу');
+        }
+    });
+
+    // Event
+    function populateSelect(selectId, data, placeholder) {
+        const select = document.getElementById(selectId);
+        select.innerHTML = `<option value="">${placeholder}</option>`;
+        data.forEach(item => {
+            select.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+        });
+    }
+    
+    function openEventModal(eventId = null, date = null) {
+        const form = document.getElementById('event-form');
+        form.reset();
+        populateSelect('event-client', clients, 'Выберите клиента');
+        populateSelect('event-performer', performers, 'Выберите исполнителя');
+        populateSelect('event-service', services, 'Выберите услугу');
+        
+        const deleteBtn = document.getElementById('delete-event-btn');
+        if (eventId) {
+            const event = events.find(e => e.id === eventId);
+            document.getElementById('event-modal-title').textContent = 'Редактировать событие';
+            document.getElementById('event-id').value = event.id;
+            document.getElementById('event-title').value = event.title;
+            document.getElementById('event-date').value = event.date;
+            document.getElementById('event-client').value = event.clientId;
+            document.getElementById('event-performer').value = event.performerId;
+            document.getElementById('event-service').value = event.serviceId;
+            deleteBtn.classList.remove('hidden');
+        } else {
+            document.getElementById('event-modal-title').textContent = 'Добавить событие';
+            document.getElementById('event-id').value = '';
+            if (date) {
+                document.getElementById('event-date').value = date;
+            }
+            deleteBtn.classList.add('hidden');
+        }
+        openModal('event-modal');
+    }
+
+    document.getElementById('add-event-btn').addEventListener('click', () => openEventModal());
+
+    document.getElementById('event-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('event-id').value;
+        const newId = id || crypto.randomUUID();
+        const values = [
+            newId,
+            document.getElementById('event-title').value,
+            document.getElementById('event-date').value,
+            document.getElementById('event-client').value,
+            document.getElementById('event-performer').value,
+            document.getElementById('event-service').value,
+        ];
+        closeModal('event-modal');
+        await handleFormSubmit('Events', id, values);
+    });
+
+    document.getElementById('delete-event-btn').addEventListener('click', async () => {
+        const id = document.getElementById('event-id').value;
+        if (id) {
+            closeModal('event-modal');
+            await handleDelete('Events', id, 'это событие');
+        }
+    });
+
+    // Calendar Navigation
+    document.getElementById('prev-month').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+    });
+
+    document.getElementById('next-month').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+    });
+
+</script>
+</body>
+</html>
+
