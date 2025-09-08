@@ -3,836 +3,552 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Аниматоры "Бум"</title>
+    <title>Каталог аниматоров</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@400;600&family=Chewy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Общие стили для всего документа */
+        html, body {
+            height: 100%;
+        }
+        
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-        }
-        .hero-bg {
-            /* Яркий, веселый фоновый градиент для настроения праздника */
-            background: linear-gradient(135deg, #FF6F61, #FFD700);
+            background-color: #fafafa;
             position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #b2c2f2 0%, #f2c2e3 100%);
+            background-attachment: fixed;
         }
-        .hero-bg::before {
-            content: '';
+
+        /* Анимированные фоновые фигуры */
+        .animated-shape {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://placehold.co/1920x1080/FFB6C1/FFB6C1?text=');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.4;
+            opacity: 0.8;
+            animation: float 18s ease-in-out infinite;
+            z-index: -1;
+            filter: blur(20px);
         }
-        .container-shadow {
-            /* Обновленный стиль тени, позаимствованный из дизайна */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
+
+        .shape1 {
+            width: 100px;
+            height: 100px;
+            background-color: #93b3f2;
+            border-radius: 50%;
+            top: 15%;
+            left: 5%;
+            animation-duration: 15s;
         }
-        /* Стиль для круглых кнопок с тенью */
-        .cta-button {
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+
+        .shape2 {
+            width: 80px;
+            height: 80px;
+            background-color: #e3a9cf;
+            border-radius: 50%;
+            top: 60%;
+            right: 10%;
+            animation-duration: 12s;
+            animation-delay: 2s;
         }
-        .cta-button:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.3);
+
+        .shape3 {
+            width: 90px;
+            height: 90px;
+            background-color: #b3a9e3;
+            border-radius: 50%;
+            top: 85%;
+            left: 20%;
+            animation-duration: 20s;
+            animation-delay: 4s;
         }
-        .card {
-            transition: all 0.3s ease-in-out;
-            transform-origin: center;
+
+        .shape4 {
+            width: 70px;
+            height: 70px;
+            background-color: #f2c2e3;
+            border-radius: 50%;
+            top: 30%;
+            left: 70%;
+            animation-duration: 16s;
+            animation-delay: 1s;
         }
-        .card:hover {
-            transform: translateY(-8px) rotate(1deg) scale(1.02);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+
+        .shape5 {
+            width: 110px;
+            height: 110px;
+            background-color: #c2e3f2;
+            border-radius: 50%;
+            top: 5%;
+            left: 40%;
+            animation-duration: 18s;
+            animation-delay: 3s;
         }
-        /* Новый праздничный стиль для мобильного меню */
-        .off-canvas-menu {
-            transition: transform 0.3s ease-in-out;
-            transform: translateX(100%);
-            width: 35%;
-            background: linear-gradient(135deg, #f06292, #ffd700); /* Яркий градиент */
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(-60px) rotate(180deg) scale(1.1); }
+            100% { transform: translateY(0) rotate(360deg) scale(1); }
         }
-        .off-canvas-menu.open {
-            transform: translateX(0);
-        }
-        @media (max-width: 768px) {
-            .off-canvas-menu {
-                width: 75%;
-            }
-        }
-        /* Стили для модального окна */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.9);
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            animation: fadeIn 0.3s forwards;
-        }
-        .modal-content {
+
+        /* Стили для шапки сайта */
+        header {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             position: relative;
-            max-width: 90%;
-            max-height: 90%;
-            animation: zoomIn 0.3s forwards;
+            transition: background 0.3s ease-in-out;
         }
-        .modal-content img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
+        
+        .nav-icon {
+            font-size: 1.5rem;
+            color: #4b5563;
+            transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
         }
-        .close-btn, .nav-btn {
-            position: absolute;
-            color: #fff;
-            font-size: 3rem;
-            font-weight: bold;
+        
+        .nav-icon:hover {
+            color: #1d4ed8;
+            transform: scale(1.1);
+        }
+
+        .nav-icon.active {
+            color: #3b82f6;
+            transform: scale(1.1);
+        }
+        
+        .logo-text {
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 2.5rem;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .gradient-1 {
+            background-image: linear-gradient(to right, #805AD5, #D53F8C);
+        }
+
+        .gradient-2 {
+            background-image: linear-gradient(to right, #3B82F6, #06B6D4);
+        }
+        
+        /* Дополнительные стили для новых блоков */
+        .service-card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
-            text-shadow: 0 0 5px rgba(0,0,0,0.5);
-            transition: color 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem;
         }
-        .close-btn {
-            top: 20px;
-            right: 40px;
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.2);
         }
-        .nav-btn {
-            top: 50%;
-            transform: translateY(-50%);
+        
+        .service-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            transition: color 0.3s ease;
         }
-        .prev-btn {
-            left: 40px;
+
+        .service-card:hover .service-icon {
+            color: #1d4ed8;
         }
-        .next-btn {
-            right: 40px;
+
+        .offer-card {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+
+        .offer-card:hover {
+            transform: translateX(5px);
         }
-        @keyframes zoomIn {
-            from { transform: scale(0.8); }
-            to { transform: scale(1); }
+        .offer-card-icon {
+            font-size: 2rem;
         }
-        .modal-info {
-            color: #fff;
-            margin-top: 1rem;
-            text-align: center;
+
+        /* Стили для формы */
+        .form-container {
+            background-color: white;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .ai-chat-box {
+            background-color: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+        .ai-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .ai-message {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            max-width: 80%;
+        }
+        .ai-user-message {
+            background-color: #e0e7ff;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .ai-bot-message {
+            background-color: #f3f4f6;
+            align-self: flex-start;
+        }
+        .ai-input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, getDoc, addDoc, setDoc, updateDoc, deleteDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<body>
 
-        // Глобальные переменные Firebase, которые передаются из окружения Canvas
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let db, auth;
-        let userId = null;
-        let galleryPhotos = []; // Массив для хранения данных галереи
-        let currentPhotoIndex = 0;
-
-        // Элементы DOM
-        const galleryContainer = document.getElementById('gallery-container');
-        const reviewsContainer = document.getElementById('reviews-container');
-        const reviewsForm = document.getElementById('reviews-form');
-        const adminElements = document.querySelectorAll('.admin-section');
-        const loginButton = document.getElementById('login-button');
-        const logoutButton = document.getElementById('logout-button');
-        const userIdDisplay = document.getElementById('user-id-display');
-        const loadingIndicator = document.getElementById('loading-indicator');
-        const contactForm = document.getElementById('contact-form');
-        const contactMessage = document.getElementById('contact-message');
-        
-        // Кнопки для показа/скрытия
-        const toggleAnimatorsBtn = document.getElementById('toggle-animators-btn');
-        const toggleServicesBtn = document.getElementById('toggle-services-btn');
-        
-        // Элементы для мобильного меню
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const closeMenuButton = document.getElementById('close-menu-button');
-        const mobileNavLinks = document.querySelectorAll('#mobile-menu a');
-        const backdrop = document.getElementById('menu-backdrop');
-
-        // Элементы модального окна
-        const modal = document.getElementById('photo-modal');
-        const modalImage = document.getElementById('modal-image');
-        const modalInfo = document.getElementById('modal-info');
-        const closeBtn = document.getElementById('close-modal');
-        const prevBtn = document.getElementById('prev-photo');
-        const nextBtn = document.getElementById('next-photo');
-
-        // Инициализация Firebase
-        function initializeFirebase() {
-            if (Object.keys(firebaseConfig).length === 0) {
-                console.error("Firebase config is missing.");
-                return;
-            }
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setupAuthListener();
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-            }
-        }
-
-        // Слушатель аутентификации
-        async function setupAuthListener() {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    if (userIdDisplay) {
-                        userIdDisplay.textContent = `Ваш ID: ${userId}`;
-                    }
-                    adminElements.forEach(el => el.style.display = 'block');
-                    loginButton.classList.add('hidden');
-                    logoutButton.classList.remove('hidden');
-                    console.log("User is signed in with ID:", userId);
-
-                    // После аутентификации, загружаем данные
-                    setupRealtimeListeners();
-                } else {
-                    console.log("No user signed in. Attempting anonymous sign-in.");
-                    userId = null;
-                    adminElements.forEach(el => el.style.display = 'none');
-                    loginButton.classList.add('hidden');
-                    logoutButton.classList.remove('hidden');
-                    if (userIdDisplay) {
-                        userIdDisplay.textContent = 'Для управления контентом войдите в систему.';
-                    }
-                    try {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } catch (error) {
-                        console.error("Error signing in with custom token. Attempting anonymous sign-in:", error);
-                        await signInAnonymously(auth);
-                    }
-                }
-            });
-        }
-
-        // Функция для загрузки фотографий из ВК
-        async function loadVkPhotos() {
-            loadingIndicator.classList.remove('hidden');
-            galleryContainer.innerHTML = '';
-            
-            // Замените эти значения на свои
-            const OWNER_ID = '-169543162'; // ID группы (с минусом для групп)
-            const ALBUM_ID = '257577573'; // ID альбома
-            const API_VERSION = '5.131';
-            
-            // ВНИМАНИЕ: В реальном приложении нельзя хранить токен на фронтенде!
-            // Его следует использовать на безопасном бэкенде.
-            const ACCESS_TOKEN = 'mock-access-token'; 
-            
-            const url = `https://api.vk.com/method/photos.get?owner_id=${OWNER_ID}&album_id=${ALBUM_ID}&access_token=${ACCESS_TOKEN}&v=${API_VERSION}&count=20&photo_sizes=1`;
-
-            // Мок-данные для демонстрации, так как прямой вызов API с фронтенда может не работать
-            const mockPhotos = {
-                response: {
-                    items: [
-                        { sizes: [{ url: 'https://placehold.co/800x600/FFD700/FFF?text=Магическое+шоу' }], text: 'Магическое шоу' },
-                        { sizes: [{ url: 'https://placehold.co/800x600/FF6F61/FFF?text=Веселый+клоун' }], text: 'Веселый клоун' },
-                        { sizes: [{ url: 'https://placehold.co/800x600/ADD8E6/FFF?text=Пузырьковое+шоу' }], text: 'Пузырьковое шоу' },
-                        { sizes: [{ url: 'https://placehold.co/800x600/98FB98/FFF?text=Пиратская+вечеринка' }], text: 'Пиратская вечеринка' },
-                        { sizes: [{ url: 'https://placehold.co/800x600/DDA0DD/FFF?text=Принцессы+Диснея' }], text: 'Принцессы Диснея' },
-                    ]
-                }
-            };
-            
-            // Заполняем глобальный массив данными
-            galleryPhotos = mockPhotos.response.items.map(item => {
-                const bestSize = item.sizes.find(size => size.type === 'x' || size.type === 'y' || size.type === 'z' || size.type === 'm' || size.type === 's');
-                return {
-                    url: bestSize ? bestSize.url : '',
-                    text: item.text
-                };
-            }).filter(item => item.url);
-
-            try {
-                // В реальной жизни здесь был бы fetch
-                // const response = await fetch(url);
-                // const data = await response.json();
-                
-                galleryPhotos.forEach((photo, index) => {
-                    const card = createGalleryCard(photo.url, photo.text, index);
-                    galleryContainer.appendChild(card);
-                });
-                
-            } catch (error) {
-                console.error("Ошибка при загрузке фото из ВК:", error);
-            } finally {
-                loadingIndicator.classList.add('hidden');
-            }
-        }
-        
-        // Слушатели для Firestore (только для отзывов и заявок)
-        function setupRealtimeListeners() {
-            if (!db) {
-                console.error("Firestore is not initialized.");
-                return;
-            }
-
-            const reviewsRef = collection(db, `/artifacts/${appId}/public/data/reviews`);
-            
-            // Заполнение базы данных отзывами, если они еще не существуют
-            seedReviewsIfEmpty(reviewsRef);
-            
-            // Отзывы
-            onSnapshot(reviewsRef, (snapshot) => {
-                reviewsContainer.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const reviewCard = createReviewCard(data, doc.id);
-                    reviewsContainer.appendChild(reviewCard);
-                });
-            }, (error) => {
-                console.error("Error fetching reviews data:", error);
-            });
-        }
-        
-        // Заполняет коллекцию отзывов, если она пуста
-        async function seedReviewsIfEmpty(reviewsRef) {
-            const snapshot = await getDocs(query(reviewsRef));
-            if (snapshot.empty) {
-                const initialReviews = [
-                    {
-                        quote: "Наш сын был в полном восторге от Пирата Джека! Он до сих пор ищет сокровища по всему дому. Спасибо за незабываемый праздник!",
-                        author: "Анна, мама Саши",
-                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Анна",
-                        created_at: new Date()
-                    },
-                    {
-                        quote: "Принцесса Эльза была просто волшебной! Дочь верила, что она настоящая, и это было самое главное. Мечта сбылась!",
-                        author: "Ольга и Сергей",
-                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Ольга",
-                        created_at: new Date()
-                    },
-                    {
-                        quote: "Научное шоу — это что-то невероятное! Дети не только веселились, но и узнали много нового. Потрясающе!",
-                        author: "Иван, папа Егора",
-                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Иван",
-                        created_at: new Date()
-                    },
-                    {
-                        quote: "Мы приглашали Человека-паука, и это был лучший день рождения в нашей жизни! Он не просто играл, а создал целую историю.",
-                        author: "Марина",
-                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Марина",
-                        created_at: new Date()
-                    },
-                    {
-                        quote: "Шоу мыльных пузырей было таким красивым и завораживающим! Все дети, и даже взрослые, были в восторге.",
-                        author: "Ксения",
-                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Ксения",
-                        created_at: new Date()
-                    },
-                    {
-                        quote: "Наши аниматоры-роботы сделали вечеринку по-настоящему футуристической! Сын и его друзья были в полном восторге.",
-                        author: "Виктор",
-                        photo_url: "https://placehold.co/80x80/ffd9e6/f06292?text=Виктор",
-                        created_at: new Date()
-                    }
-                ];
-
-                for (const review of initialReviews) {
-                    await addDoc(reviewsRef, review);
-                }
-                console.log("База данных отзывов была заполнена.");
-            }
-        }
-
-        // Вспомогательные функции для UI
-        function createGalleryCard(imageUrl, title, index) {
-            const card = document.createElement('div');
-            card.className = 'bg-white p-6 rounded-3xl overflow-hidden container-shadow card cursor-pointer';
-            card.innerHTML = `
-                <div class="aspect-w-16 aspect-h-9 w-full">
-                    <img src="${imageUrl}" alt="${title}" class="w-full h-full object-cover rounded-2xl">
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">${title}</h3>
-                </div>
-            `;
-            card.addEventListener('click', () => openModal(index));
-            return card;
-        }
-
-        function createReviewCard(data, id) {
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-3xl p-6 container-shadow flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-4 card';
-            card.innerHTML = `
-                <div class="flex-shrink-0">
-                    <img src="${data.photo_url || 'https://placehold.co/80x80/ffd9e6/f06292?text=Фото'}" alt="Фото" class="w-20 h-20 rounded-full object-cover border-4 border-pink-300">
-                </div>
-                <div class="flex-grow text-center md:text-left">
-                    <p class="text-gray-700 italic mb-2">"${data.quote}"</p>
-                    <p class="font-semibold text-pink-600">- ${data.author}</p>
-                </div>
-                <div class="admin-section" style="display: none;">
-                    <button class="delete-review-btn text-red-500 hover:text-red-700" data-id="${id}"><i class="fas fa-trash"></i></button>
-                </div>
-            `;
-            const deleteButton = card.querySelector('.delete-review-btn');
-            if (deleteButton) {
-                deleteButton.addEventListener('click', () => deleteDoc(doc(db, `/artifacts/${appId}/public/data/reviews`, id)));
-            }
-            return card;
-        }
-        
-        // Функции для модального окна
-        function openModal(index) {
-            if (index < 0 || index >= galleryPhotos.length) return;
-            currentPhotoIndex = index;
-            modalImage.src = galleryPhotos[currentPhotoIndex].url;
-            modalImage.alt = galleryPhotos[currentPhotoIndex].text;
-            modalInfo.textContent = galleryPhotos[currentPhotoIndex].text;
-            modal.style.display = 'flex';
-        }
-
-        function closeModal() {
-            modal.style.display = 'none';
-        }
-
-        function showNextPhoto() {
-            currentPhotoIndex = (currentPhotoIndex + 1) % galleryPhotos.length;
-            modalImage.src = galleryPhotos[currentPhotoIndex].url;
-            modalImage.alt = galleryPhotos[currentPhotoIndex].text;
-            modalInfo.textContent = galleryPhotos[currentPhotoIndex].text;
-        }
-
-        function showPrevPhoto() {
-            currentPhotoIndex = (currentPhotoIndex - 1 + galleryPhotos.length) % galleryPhotos.length;
-            modalImage.src = galleryPhotos[currentPhotoIndex].url;
-            modalImage.alt = galleryPhotos[currentPhotoIndex].text;
-            modalInfo.textContent = galleryPhotos[currentPhotoIndex].text;
-        }
-
-        // Обработка форм
-        reviewsForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const quote = reviewsForm.quote.value;
-            const author = reviewsForm.author.value;
-            const photo_url = reviewsForm.photo_url.value;
-            if (quote && author && db) {
-                await addDoc(collection(db, `/artifacts/${appId}/public/data/reviews`), {
-                    quote,
-                    author,
-                    photo_url,
-                    created_at: new Date()
-                }).catch(error => console.error("Error adding review:", error));
-                reviewsForm.reset();
-            }
-        });
-
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = contactForm.name.value;
-            const phone = contactForm.phone.value;
-            if (name && phone) {
-                contactMessage.textContent = 'Заявка отправляется...';
-                await addDoc(collection(db, `/artifacts/${appId}/public/data/applications`), {
-                    name,
-                    phone,
-                    created_at: new Date()
-                }).then(() => {
-                    contactMessage.textContent = 'Спасибо за заявку! Мы скоро свяжемся с вами.';
-                    contactForm.reset();
-                }).catch((error) => {
-                    console.error("Error submitting contact form:", error);
-                    contactMessage.textContent = 'Ошибка при отправке. Пожалуйста, попробуйте еще раз.';
-                });
-            }
-        });
-        
-        // Кнопки входа/выхода
-        loginButton.addEventListener('click', async () => {
-            await signInAnonymously(auth).catch(error => console.error("Login error:", error));
-        });
-        
-        logoutButton.addEventListener('click', async () => {
-            await signOut(auth).catch(error => console.error("Logout error:", error));
-        });
-
-        // Функция для переключения видимости блоков
-        function toggleSection(elements, button) {
-            const isHidden = elements[0].classList.contains('hidden');
-            elements.forEach(el => el.classList.toggle('hidden'));
-            button.textContent = isHidden ? 'Скрыть всех' : 'Показать всех';
-        }
-
-        // Обработчики событий для кнопок
-        toggleAnimatorsBtn.addEventListener('click', () => {
-            const extraAnimators = document.querySelectorAll('.animator-card.extra');
-            toggleSection(extraAnimators, toggleAnimatorsBtn);
-        });
-        
-        toggleServicesBtn.addEventListener('click', () => {
-            const extraServices = document.querySelectorAll('.service-card.extra');
-            toggleSection(extraServices, toggleServicesBtn);
-        });
-
-        // Логика для мобильного меню
-        const toggleMobileMenu = () => {
-            mobileMenu.classList.toggle('open');
-            backdrop.classList.toggle('hidden');
-        };
-
-        mobileMenuButton.addEventListener('click', toggleMobileMenu);
-        closeMenuButton.addEventListener('click', toggleMobileMenu);
-        backdrop.addEventListener('click', toggleMobileMenu);
-
-        // Закрываем меню при нажатии на ссылку
-        mobileNavLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href');
-                const targetSection = document.querySelector(targetId);
-                if (targetSection) {
-                    targetSection.scrollIntoView({ behavior: 'smooth' });
-                }
-                toggleMobileMenu();
-            });
-        });
-
-        // Запуск
-        window.onload = () => {
-          initializeFirebase();
-          loadVkPhotos(); // Загружаем фото из ВК при загрузке страницы
-        };
-    </script>
+    <!-- Анимированные фоновые фигуры -->
+    <div class="animated-shape shape1"></div>
+    <div class="animated-shape shape2"></div>
+    <div class="animated-shape shape3"></div>
+    <div class="animated-shape shape4"></div>
+    <div class="animated-shape shape5"></div>
 
     <!-- Шапка сайта -->
-    <header class="bg-white shadow-xl py-6 z-50 sticky top-0">
-        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
-            <!-- Логотип "Аниматоры БУМ" -->
-            <a href="#" class="text-3xl font-extrabold text-orange-500 flex items-center gap-2 mb-2 md:mb-0">
-                <i class="fas fa-magic text-4xl text-blue-500"></i> Аниматоры БУМ
-            </a>
-
-            <!-- Навигационное меню для десктопа -->
-            <nav class="hidden md:flex items-center space-x-6">
-                <a href="#animators" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Аниматоры</a>
-                <a href="#services" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Шоу</a>
-                <a href="#services" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Квесты</a>
-                <a href="#services" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Мастер-классы</a>
-                <a href="#prices" class="text-gray-600 hover:text-orange-500 font-semibold transition-colors duration-200">Цены</a>
-            </nav>
-
-            <!-- Контакты и социальные сети -->
-            <div class="hidden md:flex flex-col items-end space-y-2">
-                <a href="tel:+79001234567" class="text-gray-700 hover:text-orange-500 font-bold transition-colors duration-200">
-                    <i class="fas fa-phone mr-2"></i> +7 (900) 123-45-67
-                </a>
-                <div class="flex items-center space-x-3 text-2xl">
-                    <a href="https://wa.me/79001234567" target="_blank" class="text-gray-600 hover:text-green-500 transition-colors duration-200"><i class="fab fa-whatsapp"></i></a>
-                    <a href="https://t.me/your_telegram" target="_blank" class="text-gray-600 hover:text-blue-400 transition-colors duration-200"><i class="fab fa-telegram-plane"></i></a>
-                    <a href="https://vk.com/your_vk" target="_blank" class="text-gray-600 hover:text-blue-500 transition-colors duration-200"><i class="fab fa-vk"></i></a>
-                </div>
+    <header class="fixed top-0 left-0 w-full bg-white border-b border-gray-200 z-50">
+        <div class="container mx-auto px-4 sm:px-6 py-4 lg:py-8 flex justify-between items-center max-w-5xl">
+            <!-- Иконки с левой стороны -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <!-- Кнопка "Назад" -->
+                <a href="#" class="nav-icon"><i class="fas fa-arrow-left"></i></a>
             </div>
-
-            <!-- Кнопка-гамбургер для мобильного меню -->
-            <button id="mobile-menu-button" class="md:hidden text-gray-700 hover:text-orange-500 focus:outline-none">
-                <i class="fas fa-bars fa-2x"></i>
-            </button>
+            
+            <!-- Поисковая строка и иконки навигации -->
+            <div class="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
+                <!-- Поле поиска -->
+                <div class="relative w-full sm:w-32 md:w-48 lg:w-64">
+                    <input type="text" id="searchInput" placeholder="Поиск" class="w-full pl-4 pr-10 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow duration-300">
+                    <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <!-- Иконки навигации -->
+                <a href="#" class="nav-icon active lg:text-3xl"><i class="fas fa-home"></i></a> 
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fas fa-wand-magic-sparkles"></i></a>
+                <!-- Иконка волшебной палочки -->
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fas fa-gift"></i></a> 
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fab fa-whatsapp"></i></a> 
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fab fa-telegram"></i></a>
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fas fa-phone"></i></a> 
+            </div>
         </div>
     </header>
 
-    <!-- Мобильное меню (off-canvas) -->
-    <div id="mobile-menu" class="off-canvas-menu fixed top-0 right-0 h-full shadow-xl z-50 flex flex-col p-8 md:hidden bg-gradient-to-br from-pink-400 to-yellow-300">
-        <div class="flex justify-end mb-8">
-            <button id="close-menu-button" class="text-white hover:text-orange-500 focus:outline-none drop-shadow-lg">
-                <i class="fas fa-times fa-2x"></i>
-            </button>
+    <main class="container mx-auto px-4 sm:px-6 py-8 mt-24 max-w-5xl">
+        <!-- Логотип компании -->
+        <div class="text-center mb-10">
+            <img src="/img/Аниматоры БУМ Москва и МО2.png" alt="Логотип компании BOOM!" class="mx-auto w-full max-w-sm rounded-lg shadow-xl" onerror="this.src='https://placehold.co/400x150/f2c2e3/93b3f2?text=BOOM!+Logo'">
         </div>
-        <nav class="flex flex-col space-y-6 text-xl">
-            <a href="#animators" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Аниматоры</a>
-            <a href="#services" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Шоу</a>
-            <a href="#services" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Квесты</a>
-            <a href="#services" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Мастер-классы</a>
-            <a href="#prices" class="text-white hover:text-blue-600 font-semibold transition-colors duration-200 drop-shadow-lg">Цены</a>
-        </nav>
-        <div class="mt-8 pt-8 border-t border-white/50 space-y-4">
-            <a href="tel:+79001234567" class="mt-4 text-white font-semibold hover:text-blue-500 transition-colors duration-200 drop-shadow-lg flex items-center gap-2">
-                <i class="fas fa-phone"></i> +7 (900) 123-45-67
+
+        <!-- Блоки "Палочка" и "Подарок" -->
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <!-- Блок для "Палочки со звездочками" -->
+            <a href="#" class="service-card bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-3xl">
+                <i class="fas fa-wand-magic-sparkles service-icon text-white"></i>
+                <h2 class="text-3xl font-bold font-['Fredoka_One'] mb-2">Наши аниматоры</h2>
+                <p class="text-center font-inter text-gray-100">Идеальный праздник начинается с волшебства. Выбирайте из лучших аниматоров!</p>
             </a>
-            <div class="flex space-x-4 justify-center">
-                <a href="https://wa.me/79001234567" target="_blank" class="text-white hover:text-green-500 transition-colors duration-200 text-3xl"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://t.me/your_telegram" target="_blank" class="text-white hover:text-blue-400 transition-colors duration-200 text-3xl"><i class="fab fa-telegram-plane"></i></a>
-                <a href="https://vk.com/your_vk" target="_blank" class="text-white hover:text-blue-500 transition-colors duration-200 text-3xl"><i class="fab fa-vk"></i></a>
-            </div>
-        </div>
-    </div>
 
-    <!-- Задний фон для меню -->
-    <div id="menu-backdrop" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300"></div>
-
-    <!-- Главный экран - Секция-герой -->
-    <main class="flex-grow flex flex-col items-center p-4">
-        <div class="relative w-full h-96 md:h-[600px] rounded-3xl overflow-hidden container-shadow hero-bg text-center mb-12">
-            <div class="relative z-20 flex flex-col items-center justify-center h-full text-white px-6">
-                
-                <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-4 drop-shadow-lg">
-                    Лучший день рождения в жизни!
-                </h1>
-                <p class="text-xl md:text-2xl font-medium mb-8 max-w-2xl drop-shadow-md">
-                    Окунитесь в мир веселья и волшебства с нашими профессиональными аниматорами.
-                </p>
-                <a href="#contact" class="bg-white text-orange-500 font-bold py-4 px-8 rounded-full shadow-xl hover:bg-gray-200 transition-colors duration-300 transform hover:scale-105">
-                    Заказать праздник
-                </a>
-            </div>
+            <!-- Блок для "Подарка" -->
+            <a href="#" class="service-card bg-gradient-to-br from-pink-500 to-red-600 text-white rounded-3xl">
+                <i class="fas fa-gift service-icon text-white"></i>
+                <h2 class="text-3xl font-bold font-['Fredoka_One'] mb-2">Подарочные сертификаты</h2>
+                <p class="text-center font-inter text-gray-100">Подарите своим близким незабываемые эмоции и радость!</p>
+            </a>
         </div>
 
-        <!-- Новый раздел: Наши аниматоры -->
-        <section id="animators" class="py-12 bg-yellow-100 w-full rounded-3xl container-shadow">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-4xl md:text-5xl font-extrabold text-blue-600 mb-12">Наши аниматоры</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <div class="bg-white p-8 rounded-3xl container-shadow card animator-card">
-                        <img src="https://placehold.co/400x400/FFB6C1/FFF?text=Эльза" alt="Эльза" class="w-full h-auto rounded-2xl mb-4">
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Принцесса Эльза</h3>
-                        <p class="text-gray-600">Погрузимся в волшебный мир с песнями и танцами!</p>
-                    </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card animator-card">
-                        <img src="https://placehold.co/400x400/ADD8E6/FFF?text=Человек-паук" alt="Человек-паук" class="w-full h-auto rounded-2xl mb-4">
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Человек-паук</h3>
-                        <p class="text-gray-600">Научимся лазать по стенам и спасать мир от злодеев!</p>
-                    </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card animator-card">
-                        <img src="https://placehold.co/400x400/98FB98/FFF?text=Пират+Джек" alt="Пират Джек" class="w-full h-auto rounded-2xl mb-4">
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Пират Джек</h3>
-                        <p class="text-600">Отправимся в морское приключение за сокровищами!</p>
-                    </div>
-                    <!-- Дополнительные аниматоры, скрытые по умолчанию -->
-                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden animator-card">
-                        <img src="https://placehold.co/400x400/800080/FFF?text=Роботы" alt="Роботы" class="w-full h-auto rounded-2xl mb-4">
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Аниматоры-роботы</h3>
-                        <p class="text-gray-600">Погружение в мир технологий и футуристических приключений!</p>
-                    </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden animator-card">
-                        <img src="https://placehold.co/400x400/FFC0CB/FFF?text=Куклы+ЛОЛ" alt="Куклы ЛОЛ" class="w-full h-auto rounded-2xl mb-4">
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Куклы LOL Surprise</h3>
-                        <p class="text-gray-600">Организуем самую модную вечеринку с любимыми куколками!</p>
-                    </div>
-                </div>
-                <button id="toggle-animators-btn" class="mt-8 bg-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-300">
-                    Показать всех
-                </button>
-            </div>
-        </section>
-
-        <!-- Новый раздел: Наши услуги и развлечения -->
-        <section id="services" class="py-12 mt-12 w-full">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-4xl md:text-5xl font-extrabold text-orange-600 mb-12">Наши услуги и развлечения</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <div class="bg-white p-8 rounded-3xl container-shadow card service-card">
-                        <i class="fas fa-flask text-6xl text-blue-500 mb-4"></i>
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Научное шоу</h3>
-                        <p class="text-gray-600">Увлекательные и безопасные эксперименты, которые удивят даже взрослых!</p>
-                    </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card service-card">
-                        <i class="fas fa-soap text-6xl text-pink-500 mb-4"></i>
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Шоу мыльных пузырей</h3>
-                        <p class="text-gray-600">Огромные, завораживающие пузыри, в которых можно оказаться!</p>
-                    </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card service-card">
-                        <i class="fas fa-paint-brush text-6xl text-purple-500 mb-4"></i>
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Аквагрим</h3>
-                        <p class="text-gray-600">Превратимся в любимых героев с помощью красочного и безопасного грима.</p>
-                    </div>
-                    <!-- Дополнительные услуги, скрытые по умолчанию -->
-                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden service-card">
-                        <i class="fas fa-magic text-6xl text-orange-500 mb-4"></i>
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Фокусник</h3>
-                        <p class="text-gray-600">Невероятные трюки и иллюзии, которые создадут атмосферу волшебства.</p>
-                    </div>
-                    <div class="bg-white p-8 rounded-3xl container-shadow card extra hidden service-card">
-                        <i class="fas fa-theater-masks text-6xl text-teal-500 mb-4"></i>
-                        <h3 class="text-3xl font-bold text-gray-800 mb-4">Ростовые куклы</h3>
-                        <p class="text-gray-600">Любимые персонажи мультфильмов в полный рост, готовые обниматься и веселиться!</p>
-                    </div>
-                </div>
-                <button id="toggle-services-btn" class="mt-8 bg-orange-500 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-orange-600 transition-colors duration-300">
-                    Показать всех
-                </button>
-            </div>
-        </section>
-
-    </main>
-    
-    <!-- Новый раздел "Цены" -->
-    <section id="prices" class="py-20 bg-blue-100">
-        <div class="container mx-auto px-6 text-center">
-            <h2 class="text-5xl font-extrabold text-blue-600 mb-12">Наши цены</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Пакет "Минимальный" -->
-                <div class="bg-white p-8 rounded-3xl container-shadow card">
-                    <h3 class="text-3xl font-bold text-blue-600 mb-4">Пакет "Мини"</h3>
-                    <p class="text-gray-700 mb-6">Программа на 1 час</p>
-                    <div class="text-5xl font-extrabold text-orange-500 mb-4">3 000 руб.</div>
-                    <ul class="text-left space-y-2 text-gray-600">
-                        <li><i class="fas fa-check-circle text-green-500"></i> Один аниматор</li>
-                        <li><i class="fas fa-check-circle text-green-500"></i> Игровая программа</li>
-                        <li><i class="fas fa-check-circle text-green-500"></i> Музыкальное сопровождение</li>
-                    </ul>
-                </div>
-                <!-- Пакет "Стандарт" -->
-                <div class="bg-white p-8 rounded-3xl container-shadow card border-4 border-orange-500">
-                    <h3 class="text-3xl font-bold text-orange-500 mb-4">Пакет "Стандарт"</h3>
-                    <p class="text-gray-700 mb-6">Программа на 2 часа</p>
-                    <div class="text-5xl font-extrabold text-blue-600 mb-4">5 500 руб.</div>
-                    <ul class="text-left space-y-2 text-gray-600">
-                        <li><i class="fas fa-check-circle text-green-500"></i> Один аниматор</li>
-                        <li><i class="fas fa-check-circle text-green-500"></i> Расширенная игровая программа</li>
-                        <li><i class="fas fa-check-circle text-green-500"></i> Шоу мыльных пузырей ИЛИ аквагрим</li>
-                        <li><i class="fas fa-check-circle text-green-500"></i> Тематический реквизит</li>
-                    </ul>
-                </div>
-                <!-- Пакет "Премиум" -->
-                <div class="bg-white p-8 rounded-3xl container-shadow card">
-                    <h3 class="text-3xl font-bold text-blue-600 mb-4">Пакет "Премиум"</h3>
-                    <p class="text-gray-700 mb-6">Программа на 3 часа</p>
-                    <div class="text-5xl font-extrabold text-orange-500 mb-4">8 000 руб.</div>
-                    <ul class="text-left space-y-2 text-gray-600">
-                        <li><i class="fas fa-check-circle text-green-500"></i> Два аниматора</li>
-                        <li><i class="fas fa-check-circle text-green-500"></i> Полная игровая программа</li>
-                        <li><i class="fas fa-check-circle text-green-500"></i> Шоу мыльных пузырей И аквагрим</li>
-                        <li><i class="fas fa-check-circle text-green-500"></i> Мастер-класс на выбор</li>
-                    </ul>
-                </div>
-            </div>
-            <p class="text-center text-gray-600 mt-8">Цены могут варьироваться в зависимости от выбранных услуг и удалённости.</p>
-        </div>
-    </section>
-
-    <!-- Галерея "Наши герои" -->
-    <section id="gallery" class="py-20 bg-white">
-        <div class="container mx-auto px-6">
-            <h2 class="text-5xl font-extrabold text-center text-orange-500 mb-12">Фотогалерея</h2>
-            <div id="loading-indicator" class="text-center text-gray-500">Загрузка фото из ВКонтакте...</div>
-            <div id="gallery-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Карточки галереи будут добавлены здесь с помощью JavaScript -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Раздел "Отзывы" -->
-    <section id="reviews" class="py-20 bg-pink-100">
-        <div class="container mx-auto px-6">
-            <h2 class="text-5xl font-extrabold text-indigo-600 text-center mb-12">Отзывы счастливых родителей</h2>
-            <div id="reviews-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Отзывы будут добавлены здесь с помощью JavaScript -->
-            </div>
-
-            <!-- Админ-панель для отзывов -->
-            <div class="admin-section mt-16 p-8 bg-white rounded-3xl container-shadow" style="display: none;">
-                <h3 class="text-3xl font-bold text-indigo-700 mb-6">Добавить новый отзыв</h3>
-                <form id="reviews-form" class="space-y-6">
-                    <div>
-                        <label for="quote" class="block text-lg font-medium text-indigo-600">Цитата:</label>
-                        <textarea id="quote" name="quote" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50" required></textarea>
-                    </div>
-                    <div>
-                        <label for="author" class="block text-lg font-medium text-indigo-600">Имя родителя:</label>
-                        <input type="text" id="author" name="author" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50" required>
-                    </div>
-                    <div>
-                        <label for="photo_url" class="block text-lg font-medium text-indigo-600">Ссылка на фото:</label>
-                        <input type="url" id="photo_url" name="photo_url" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50">
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-300 transform hover:scale-105">
-                        Добавить отзыв
-                    </button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <!-- Контактная форма -->
-    <section id="contact" class="py-20 bg-gray-50">
-        <div class="container mx-auto px-6 text-center">
-            <h2 class="text-5xl font-extrabold text-orange-600 mb-6">Организовать праздник</h2>
-            <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">Оставьте свои контакты, и наш менеджер свяжется с вами, чтобы подобрать идеального аниматора.</p>
-            <form id="contact-form" class="max-w-xl mx-auto space-y-6 bg-white p-8 rounded-3xl container-shadow">
+        <!-- Секция с предложениями -->
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 text-center mb-8 font-['Chewy']">Идеи для вашего праздника</h2>
+        <div class="flex flex-col space-y-4 mb-12">
+            <div class="offer-card">
+                <i class="fas fa-birthday-cake offer-card-icon text-purple-500"></i>
                 <div>
-                    <label for="name" class="sr-only">Ваше имя</label>
-                    <input type="text" id="name" name="name" placeholder="Ваше имя" class="w-full p-4 rounded-full border border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" required>
+                    <h3 class="font-bold text-lg">Детский день рождения</h3>
+                    <p class="text-sm text-gray-600">Захватывающие квесты и игры для самого веселого праздника.</p>
                 </div>
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-graduation-cap offer-card-icon text-indigo-500"></i>
                 <div>
-                    <label for="phone" class="sr-only">Номер телефона</label>
-                    <input type="tel" id="phone" name="phone" placeholder="Номер телефона" class="w-full p-4 rounded-full border border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" required>
+                    <h3 class="font-bold text-lg">Выпускной вечер</h3>
+                    <p class="text-sm text-gray-600">Незабываемое прощание со школой или детским садом.</p>
                 </div>
-                <button type="submit" class="w-full bg-purple-600 text-white font-bold py-4 px-6 rounded-full shadow-lg hover:bg-purple-700 transition-colors duration-300 transform hover:scale-105">
-                        Отправить заявку
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-users offer-card-icon text-pink-500"></i>
+                <div>
+                    <h3 class="font-bold text-lg">Корпоративное мероприятие</h3>
+                    <p class="text-sm text-gray-600">Сплочение коллектива и развлечения для сотрудников.</p>
+                </div>
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-snowman offer-card-icon text-blue-500"></i>
+                <div>
+                    <h3 class="font-bold text-lg">Новогодний утренник</h3>
+                    <p class="text-sm text-gray-600">Встреча Деда Мороза и Снегурочки с песнями и хороводами.</p>
+                </div>
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-praying-hands offer-card-icon text-gray-500"></i>
+                <div>
+                    <h3 class="font-bold text-lg">Крестины и семейные торжества</h3>
+                    <p class="text-sm text-gray-600">Нежные и трогательные программы для самых важных моментов.</p>
+                </div>
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-ring offer-card-icon text-rose-500"></i>
+                <div>
+                    <h3 class="font-bold text-lg">Свадьба</h3>
+                    <p class="text-sm text-gray-600">Развлекательная программа для детей на взрослом празднике.</p>
+                </div>
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-baby offer-card-icon text-teal-500"></i>
+                <div>
+                    <h3 class="font-bold text-lg">Тематический утренник</h3>
+                    <p class="text-sm text-gray-600">Погружение в мир любимых мультфильмов и сказок.</p>
+                </div>
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-hat-wizard offer-card-icon text-orange-500"></i>
+                <div>
+                    <h3 class="font-bold text-lg">Хэллоуин</h3>
+                    <p class="text-sm text-gray-600">Жутко веселые программы для самых смелых ребят.</p>
+                </div>
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-school offer-card-icon text-lime-500"></i>
+                <div>
+                    <h3 class="font-bold text-lg">Школьные вечеринки</h3>
+                    <p class="text-sm text-gray-600">Дискотеки, конкурсы и игры для школьников любого возраста.</p>
+                </div>
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-ghost offer-card-icon text-gray-500"></i>
+                <div>
+                    <h3 class="font-bold text-lg">Вечеринка в стиле квест</h3>
+                    <p class="text-sm text-gray-600">Программы с поиском сокровищ и разгадыванием загадок.</p>
+                </div>
+            </div>
+            <div class="offer-card">
+                <i class="fas fa-star offer-card-icon text-yellow-500"></i>
+                <div>
+                    <h3 class="font-bold text-lg">Тематический праздник</h3>
+                    <p class="text-sm text-gray-600">Костюмированные вечеринки с любимыми персонажами.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция формы -->
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 text-center mb-8 font-['Chewy']">Забронировать аниматора</h2>
+        <div class="form-container mb-12">
+            <form id="bookingForm" class="flex flex-col space-y-6">
+                <label for="eventDate" class="text-gray-700 font-medium">Выберите дату:</label>
+                <input type="date" id="eventDate" name="eventDate" class="form-input" required>
+
+                <label for="animatorSelect" class="text-gray-700 font-medium">Выберите аниматора:</label>
+                <select id="animatorSelect" name="animatorSelect" class="form-select" required>
+                    <option value="">-- Выберите вариант --</option>
+                    <option value="Fairy">Фея Роза</option>
+                    <option value="Clown">Клоун Бим-Бом</option>
+                    <option value="Superhero">Супергерой Флэш</option>
+                    <option value="Princess">Принцесса Анна</option>
+                </select>
+
+                <button type="submit" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full transition-colors">
+                    Забронировать
                 </button>
-                <p id="contact-message" class="text-center text-green-600 font-semibold mt-4"></p>
             </form>
         </div>
-    </section>
-
-    <!-- Подвал сайта -->
-    <footer class="bg-gray-900 text-gray-300 py-8">
-        <div class="container mx-auto px-6 text-center">
-            <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 mb-4">
-                <a href="https://t.me/your_telegram" target="_blank" class="text-gray-400 hover:text-blue-400 transition-colors duration-200">
-                    <i class="fab fa-telegram-plane fa-2x"></i>
-                </a>
-                <a href="https://wa.me/79001234567" target="_blank" class="text-gray-400 hover:text-green-500 transition-colors duration-200">
-                    <i class="fab fa-whatsapp fa-2x"></i>
-                </a>
-                <a href="https://tiktok.com/@your_tiktok" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-200">
-                    <i class="fab fa-tiktok fa-2x"></i>
-                </a>
+        
+        <!-- Окно подсказок ИИ -->
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 text-center mb-8 font-['Chewy']">Подсказки от ИИ-помощника</h2>
+        <div class="ai-chat-box">
+            <div id="aiMessages" class="ai-messages flex flex-col space-y-2">
+                <div class="ai-bot-message">Привет! Я ваш ИИ-помощник. Спросите меня о чем-нибудь, чтобы получить идеи для праздника.</div>
             </div>
-            
-            <!-- Элементы админ-панели в подвале -->
-            <div class="mt-4 flex flex-col items-center space-y-2">
-                <p id="user-id-display" class="text-sm text-gray-500 user-id-container">Для управления контентом войдите в систему.</p>
-                <button id="login-button" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-300">Войти (Админ)</button>
-                <button id="logout-button" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-gray-600 transition-colors duration-300 hidden">Выйти</button>
+            <div class="ai-input-container">
+                <input type="text" id="aiInput" placeholder="Введите ваш вопрос..." class="form-input flex-grow">
+                <button id="aiSendBtn" class="bg-indigo-500 text-white p-3 rounded-full hover:bg-indigo-600 transition-colors">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
-
-            <p class="mt-4">&copy; 2024 Аниматоры "Бум". Все права защищены.</p>
         </div>
-    </footer>
 
-    <!-- Модальное окно для просмотра фото -->
-    <div id="photo-modal" class="modal">
-        <span id="close-modal" class="close-btn">&times;</span>
-        <span id="prev-photo" class="nav-btn prev-btn">&lt;</span>
-        <img id="modal-image" class="modal-content" src="" alt="">
-        <span id="next-photo" class="nav-btn next-btn">&gt;</span>
-        <div id="modal-info" class="modal-info"></div>
-    </div>
-    
-    <!-- Tawk.to чат (вставлять здесь) -->
+        <div class="mt-12">
+            <!-- Заголовок для контактов -->
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 text-center mb-8 font-['Chewy']">Свяжитесь с нами</h2>
+
+            <!-- Блок "Контакты" -->
+            <div class="flex flex-col lg:flex-row justify-center items-center space-y-8 lg:space-y-0 lg:space-x-12 bg-white p-6 sm:p-8 lg:p-12 rounded-2xl shadow-lg max-w-4xl mx-auto">
+                <!-- Контакты -->
+                <div class="flex flex-col items-center space-y-6">
+                    <!-- WhatsApp -->
+                    <a href="#" class="flex items-center text-gray-700 hover:text-green-500 transition-colors">
+                        <i class="fab fa-whatsapp text-4xl mr-4"></i>
+                        <span class="text-xl">WhatsApp</span>
+                    </a>
+                    <!-- Telegram -->
+                    <a href="#" class="flex items-center text-gray-700 hover:text-blue-500 transition-colors">
+                        <i class="fab fa-telegram text-4xl mr-4"></i>
+                        <span class="text-xl">Telegram</span>
+                    </a>
+                    <!-- Email -->
+                    <a href="mailto:info@animators.ru" class="flex items-center text-gray-700 hover:text-purple-500 transition-colors">
+                        <i class="fas fa-envelope text-4xl mr-4"></i>
+                        <span class="text-xl">info@animators.ru</span>
+                    </a>
+                    <!-- Phone -->
+                    <a href="#" class="flex items-center text-gray-700 hover:text-indigo-500 transition-colors">
+                        <i class="fas fa-phone text-4xl mr-4"></i>
+                        <span class="text-xl">Звонок</span>
+                    </a>
+                </div>
+                
+                <!-- Яндекс.Карта -->
+                <div class="w-full lg:w-2/3 h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-inner">
+                    <iframe src="https://yandex.ru/map-widget/v1/?um=constructor%3A9851723f5b08a17688c234a74794e24022b7858c2f1f00880f7601d365f5a2a9&amp;source=constructor" width="100%" height="100%" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+    </main>
+
     <script>
-        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-        (function(){
-        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-        s1.async=true;
-        s1.src='https://embed.tawk.to/YOUR_PROPERTY_ID/default';
-        s1.charset='UTF-8';
-        s1.setAttribute('crossorigin','*');
-        s0.parentNode.insertBefore(s1,s0);
-        })();
+        document.addEventListener('DOMContentLoaded', () => {
+            const aiInput = document.getElementById('aiInput');
+            const aiSendBtn = document.getElementById('aiSendBtn');
+            const aiMessages = document.getElementById('aiMessages');
+
+            async function sendMessage() {
+                const userMessage = aiInput.value.trim();
+                if (userMessage === '') return;
+
+                // Добавляем сообщение пользователя
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.classList.add('ai-message', 'ai-user-message');
+                userMessageDiv.textContent = userMessage;
+                aiMessages.appendChild(userMessageDiv);
+                aiInput.value = '';
+                aiMessages.scrollTop = aiMessages.scrollHeight;
+
+                // Показываем индикатор загрузки
+                const loadingDiv = document.createElement('div');
+                loadingDiv.classList.add('ai-message', 'ai-bot-message', 'text-gray-400', 'animate-pulse');
+                loadingDiv.textContent = '...печатает';
+                aiMessages.appendChild(loadingDiv);
+                aiMessages.scrollTop = aiMessages.scrollHeight;
+
+                const systemPrompt = `Ты дружелюбный и креативный помощник по организации детских праздников. Отвечай коротко и весело, предлагая идеи для праздника с учетом запроса пользователя.`;
+                const userQuery = `Пользователь спрашивает: "${userMessage}". Предложи несколько идей, связанных с аниматорами.`;
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                };
+
+                let response;
+                let retries = 0;
+                const maxRetries = 3;
+                while (retries < maxRetries) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            break; // Успех, выходим из цикла
+                        } else if (response.status === 429) {
+                            // Too Many Requests, делаем паузу и пробуем снова
+                            const delay = Math.pow(2, retries) * 1000;
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            retries++;
+                        } else {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                    } catch (error) {
+                        retries++;
+                        if (retries >= maxRetries) {
+                            console.error('Failed to fetch AI response after multiple retries:', error);
+                            break;
+                        }
+                    }
+                }
+
+                aiMessages.removeChild(loadingDiv);
+
+                if (!response || !response.ok) {
+                    const errorMessageDiv = document.createElement('div');
+                    errorMessageDiv.classList.add('ai-message', 'ai-bot-message');
+                    errorMessageDiv.textContent = 'Извините, у меня сейчас нет идей. Попробуйте еще раз позже.';
+                    aiMessages.appendChild(errorMessageDiv);
+                    return;
+                }
+
+                const result = await response.json();
+                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.classList.add('ai-message', 'ai-bot-message');
+                botMessageDiv.textContent = text || 'Что-то пошло не так, попробуйте снова.';
+                aiMessages.appendChild(botMessageDiv);
+                aiMessages.scrollTop = aiMessages.scrollHeight;
+            }
+
+            aiSendBtn.addEventListener('click', sendMessage);
+            aiInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
     </script>
 </body>
 </html>
