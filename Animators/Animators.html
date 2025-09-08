@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог аниматоров</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@400;600&family=Chewy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Общие стили для всего документа */
+        html, body {
+            height: 100%;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #b2c2f2 0%, #f2c2e3 100%);
+            background-attachment: fixed;
+        }
+
+        /* Анимированные фоновые фигуры */
+        .animated-shape {
+            position: absolute;
+            opacity: 0.8;
+            animation: float 18s ease-in-out infinite;
+            z-index: -1;
+            filter: blur(20px);
+        }
+
+        .shape1 {
+            width: 100px;
+            height: 100px;
+            background-color: #93b3f2;
+            border-radius: 50%;
+            top: 15%;
+            left: 5%;
+            animation-duration: 15s;
+        }
+
+        .shape2 {
+            width: 80px;
+            height: 80px;
+            background-color: #e3a9cf;
+            border-radius: 50%;
+            top: 60%;
+            right: 10%;
+            animation-duration: 12s;
+            animation-delay: 2s;
+        }
+
+        .shape3 {
+            width: 90px;
+            height: 90px;
+            background-color: #b3a9e3;
+            border-radius: 50%;
+            top: 85%;
+            left: 20%;
+            animation-duration: 20s;
+            animation-delay: 4s;
+        }
+
+        .shape4 {
+            width: 70px;
+            height: 70px;
+            background-color: #f2c2e3;
+            border-radius: 50%;
+            top: 30%;
+            left: 70%;
+            animation-duration: 16s;
+            animation-delay: 1s;
+        }
+
+        .shape5 {
+            width: 110px;
+            height: 110px;
+            background-color: #c2e3f2;
+            border-radius: 50%;
+            top: 5%;
+            left: 40%;
+            animation-duration: 18s;
+            animation-delay: 3s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(-60px) rotate(180deg) scale(1.1); }
+            100% { transform: translateY(0) rotate(360deg) scale(1); }
+        }
+
+        /* Стили для шапки сайта */
+        header {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: background 0.3s ease-in-out;
+        }
+        
+        .nav-icon {
+            font-size: 1.5rem;
+            color: #4b5563;
+            transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        
+        .nav-icon:hover {
+            color: #1d4ed8;
+            transform: scale(1.1);
+        }
+
+        .nav-icon.active {
+            color: #3b82f6;
+            transform: scale(1.1);
+        }
+        
+        .logo-text {
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 2.5rem;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .gradient-1 {
+            background-image: linear-gradient(to right, #805AD5, #D53F8C);
+        }
+
+        .gradient-2 {
+            background-image: linear-gradient(to right, #3B82F6, #06B6D4);
+        }
+        
+        /* Стили для каталога */
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .catalog-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .catalog-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .animator-card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .animator-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 20px rgba(0,0,0,0.2);
+            border-color: #6366f1; /* Интерактивная рамка */
+        }
+
+        .animator-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Анимированные фоновые фигуры -->
+    <div class="animated-shape shape1"></div>
+    <div class="animated-shape shape2"></div>
+    <div class="animated-shape shape3"></div>
+    <div class="animated-shape shape4"></div>
+    <div class="animated-shape shape5"></div>
+
+    <!-- Шапка сайта -->
+    <header class="fixed top-0 left-0 w-full bg-white border-b border-gray-200 z-50">
+        <div class="container mx-auto px-4 sm:px-6 py-4 lg:py-8 flex justify-between items-center max-w-5xl">
+            <!-- Иконки с левой стороны -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <!-- Кнопка "Назад" -->
+                <a href="#" class="nav-icon"><i class="fas fa-arrow-left"></i></a>
+            </div>
+            
+            <!-- Поисковая строка и иконки навигации -->
+            <div class="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
+                <!-- Поле поиска -->
+                <div class="relative w-full sm:w-32 md:w-48 lg:w-64">
+                    <input type="text" id="searchInput" placeholder="Поиск" class="w-full pl-4 pr-10 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow duration-300">
+                    <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <!-- Иконки навигации -->
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fas fa-home"></i></a> 
+                <a href="#" class="nav-icon active lg:text-3xl"><i class="fas fa-wand-magic-sparkles"></i></a>
+                <!-- Иконка волшебной палочки -->
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fas fa-gift"></i></a> 
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fab fa-whatsapp"></i></a> 
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fab fa-telegram"></i></a>
+                <a href="#" class="nav-icon lg:text-3xl"><i class="fas fa-phone"></i></a> 
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-32 lg:pt-36 max-w-5xl mx-auto px-4 sm:px-6 py-6">
+        
+        <!-- Категория: Игры -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Игры</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Бравл+старс" alt="Бравл старс">
+                    <div class="p-4 text-center font-semibold text-gray-700">Бравл старс</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Роблокс" alt="Роблокс">
+                    <div class="p-4 text-center font-semibold text-gray-700">Роблокс</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Соник" alt="Соник">
+                    <div class="p-4 text-center font-semibold text-gray-700">Соник</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Игра+в+кальмара" alt="Игра в кальмара">
+                    <div class="p-4 text-center font-semibold text-gray-700">Игра в кальмара</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Гонщики" alt="Гонщики">
+                    <div class="p-4 text-center font-semibold text-gray-700">Гонщики</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Майнкрафт" alt="Майнкрафт">
+                    <div class="p-4 text-center font-semibold text-gray-700">Майнкрафт</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Fortnite" alt="Fortnite">
+                    <div class="p-4 text-center font-semibold text-gray-700">Fortnite</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Among+Us" alt="Among Us">
+                    <div class="p-4 text-center font-semibold text-gray-700">Among Us</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Категория: Приключения -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Приключения</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Радужные+друзья" alt="Радужные друзья">
+                    <div class="p-4 text-center font-semibold text-gray-700">Радужные друзья</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Наруто" alt="Наруто">
+                    <div class="p-4 text-center font-semibold text-gray-700">Наруто</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Археологи" alt="Археологи">
+                    <div class="p-4 text-center font-semibold text-gray-700">Археологи</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Уэнсдей" alt="Уэнсдей">
+                    <div class="p-4 text-center font-semibold text-gray-700">Уэнсдей</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Пираты" alt="Пираты">
+                    <div class="p-4 text-center font-semibold text-gray-700">Пираты</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Гравити+Фолз" alt="Гравити Фолз">
+                    <div class="p-4 text-center font-semibold text-gray-700">Гравити Фолз</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Гарри+Поттер" alt="Гарри Поттер">
+                    <div class="p-4 text-center font-semibold text-gray-700">Гарри Поттер</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Моана" alt="Моана">
+                    <div class="p-4 text-center font-semibold text-gray-700">Моана</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Солдаты" alt="Солдаты">
+                    <div class="p-4 text-center font-semibold text-gray-700">Солдаты</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Форт+Боярд" alt="Форт Боярд">
+                    <div class="p-4 text-center font-semibold text-gray-700">Форт Боярд</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Категория: Вечеринки -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Вечеринки</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Стиляги" alt="Стиляги">
+                    <div class="p-4 text-center font-semibold text-gray-700">Стиляги</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Гавайская" alt="Гавайская">
+                    <div class="p-4 text-center font-semibold text-gray-700">Гавайская</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Слайм" alt="Слайм">
+                    <div class="p-4 text-center font-semibold text-gray-700">Слайм</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Зеркальная" alt="Зеркальная">
+                    <div class="p-4 text-center font-semibold text-gray-700">Зеркальная</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Likee" alt="Likee">
+                    <div class="p-4 text-center font-semibold text-gray-700">Likee</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Вайт+Пати" alt="Вайт Пати">
+                    <div class="p-4 text-center font-semibold text-gray-700">Вайт Пати</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Футбольная" alt="Футбольная">
+                    <div class="p-4 text-center font-semibold text-gray-700">Футбольная</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Поп+Ит" alt="Поп Ит">
+                    <div class="p-4 text-center font-semibold text-gray-700">Поп Ит</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Мексиканская" alt="Мексиканская">
+                    <div class="p-4 text-center font-semibold text-gray-700">Мексиканская</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Блогеры" alt="Блогеры">
+                    <div class="p-4 text-center font-semibold text-gray-700">Блогеры</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Авокадики" alt="Авокадики">
+                    <div class="p-4 text-center font-semibold text-gray-700">Авокадики</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Шпионская" alt="Шпионская">
+                    <div class="p-4 text-center font-semibold text-gray-700">Шпионская</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Гангстеры" alt="Гангстеры">
+                    <div class="p-4 text-center font-semibold text-gray-700">Гангстеры</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Огонь+пати" alt="Огонь пати">
+                    <div class="p-4 text-center font-semibold text-gray-700">Огонь пати</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Пижамная" alt="Пижамная">
+                    <div class="p-4 text-center font-semibold text-gray-700">Пижамная</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Морская" alt="Морская">
+                    <div class="p-4 text-center font-semibold text-gray-700">Морская</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Строительная" alt="Строительная">
+                    <div class="p-4 text-center font-semibold text-gray-700">Строительная</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Агенты" alt="Агенты">
+                    <div class="p-4 text-center font-semibold text-gray-700">Агенты</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Категория: Малышам -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Малышам</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Щенки" alt="Щенки">
+                    <div class="p-4 text-center font-semibold text-gray-700">Щенки</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Пчелка+Майя" alt="Пчелка Майя">
+                    <div class="p-4 text-center font-semibold text-gray-700">Пчелка Майя</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Болтики" alt="Болтики">
+                    <div class="p-4 text-center font-semibold text-gray-700">Болтики</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Микки+и+Минни+Маус" alt="Микки и Минни Маус">
+                    <div class="p-4 text-center font-semibold text-gray-700">Микки и Минни Маус</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Робокары" alt="Робокары">
+                    <div class="p-4 text-center font-semibold text-gray-700">Робокары</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Тачки" alt="Тачки">
+                    <div class="p-4 text-center font-semibold text-gray-700">Тачки</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Котики" alt="Котики">
+                    <div class="p-4 text-center font-semibold text-gray-700">Котики</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Трактор" alt="Трактор">
+                    <div class="p-4 text-center font-semibold text-gray-700">Трактор</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Маша+и+Миша" alt="Маша и Миша">
+                    <div class="p-4 text-center font-semibold text-gray-700">Маша и Миша</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Свинки" alt="Свинки">
+                    <div class="p-4 text-center font-semibold text-gray-700">Свинки</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Категория: Для детей -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Для детей</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Леди+Баг+и+Супер-Кот" alt="Леди Баг и Супер-Кот">
+                    <div class="p-4 text-center font-semibold text-gray-700">Леди Баг и Супер-Кот</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Тролли" alt="Тролли">
+                    <div class="p-4 text-center font-semibold text-gray-700">Тролли</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Мультяшки" alt="Мультяшки">
+                    <div class="p-4 text-center font-semibold text-gray-700">Мультяшки</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Пони" alt="Пони">
+                    <div class="p-4 text-center font-semibold text-gray-700">Пони</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Лалафанфан" alt="Лалафанфан">
+                    <div class="p-4 text-center font-semibold text-gray-700">Лалафанфан</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Зверополис" alt="Зверополис">
+                    <div class="p-4 text-center font-semibold text-gray-700">Зверополис</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Даша" alt="Даша">
+                    <div class="p-4 text-center font-semibold text-gray-700">Даша</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Гадкий+Я" alt="Гадкий Я">
+                    <div class="p-4 text-center font-semibold text-gray-700">Гадкий Я</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Лего" alt="Лего">
+                    <div class="p-4 text-center font-semibold text-gray-700">Лего</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Золотой+ключик" alt="Золотой ключик">
+                    <div class="p-4 text-center font-semibold text-gray-700">Золотой ключик</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Категория: Королевство -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Королевство</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Клуб+Винкс" alt="Клуб Винкс">
+                    <div class="p-4 text-center font-semibold text-gray-700">Клуб Винкс</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Питер+Пэн+и+Динь-Динь" alt="Питер Пэн и Динь-Динь">
+                    <div class="p-4 text-center font-semibold text-gray-700">Питер Пэн и Динь-Динь</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Рапунцель+и+Флин" alt="Рапунцель и Флин">
+                    <div class="p-4 text-center font-semibold text-gray-700">Рапунцель и Флин</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Алиса+в+Стране+чудес" alt="Алиса в Стране чудес">
+                    <div class="p-4 text-center font-semibold text-gray-700">Алиса в Стране чудес</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Русалочка" alt="Русалочка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Русалочка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Принц+и+Принцесса" alt="Принц и Принцесса">
+                    <div class="p-4 text-center font-semibold text-gray-700">Принц и Принцесса</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Барби+Супер" alt="Барби Супер">
+                    <div class="p-4 text-center font-semibold text-gray-700">Барби Супер</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Вилли+Вонка" alt="Вилли Вонка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Вилли Вонка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Патруль" alt="Патруль">
+                    <div class="p-4 text-center font-semibold text-gray-700">Патруль</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Холодное+Сердце" alt="Холодное Сердце">
+                    <div class="p-4 text-center font-semibold text-gray-700">Холодное Сердце</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Мерида" alt="Мерида">
+                    <div class="p-4 text-center font-semibold text-gray-700">Мерида</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Куколки" alt="Куколки">
+                    <div class="p-4 text-center font-semibold text-gray-700">Куколки</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Тайна+зимнего+леса" alt="Тайна зимнего леса">
+                    <div class="p-4 text-center font-semibold text-gray-700">Тайна зимнего леса</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Белоснежка" alt="Белоснежка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Белоснежка</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Категория: Супер герои -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Супер герои</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Бэтмен+и+женщина+кошка" alt="Бэтмен и женщина кошка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Бэтмен и женщина кошка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Шреддер" alt="Шреддер">
+                    <div class="p-4 text-center font-semibold text-gray-700">Шреддер</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Супер+женщина" alt="Супер женщина">
+                    <div class="p-4 text-center font-semibold text-gray-700">Супер женщина</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Человек-паук" alt="Человек-паук">
+                    <div class="p-4 text-center font-semibold text-gray-700">Человек-паук</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Ниндзяго" alt="Ниндзяго">
+                    <div class="p-4 text-center font-semibold text-gray-700">Ниндзяго</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Тор" alt="Тор">
+                    <div class="p-4 text-center font-semibold text-gray-700">Тор</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Звездные+войны" alt="Звездные войны">
+                    <div class="p-4 text-center font-semibold text-gray-700">Звездные войны</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Капитан+Америка" alt="Капитан Америка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Капитан Америка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Плющ" alt="Плющ">
+                    <div class="p-4 text-center font-semibold text-gray-700">Плющ</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Харли+Квин" alt="Харли Квин">
+                    <div class="p-4 text-center font-semibold text-gray-700">Харли Квин</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Трансформер" alt="Трансформер">
+                    <div class="p-4 text-center font-semibold text-gray-700">Трансформер</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Железный+Человек" alt="Железный Человек">
+                    <div class="p-4 text-center font-semibold text-gray-700">Железный Человек</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Супермен" alt="Супермен">
+                    <div class="p-4 text-center font-semibold text-gray-700">Супермен</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Суперсемейка" alt="Суперсемейка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Суперсемейка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Черепашки+ниндзя" alt="Черепашки ниндзя">
+                    <div class="p-4 text-center font-semibold text-gray-700">Черепашки ниндзя</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Категория: Новогодние -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Новогодние</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Санта+Клаус" alt="Санта Клаус">
+                    <div class="p-4 text-center font-semibold text-gray-700">Санта Клаус</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Гринч" alt="Гринч">
+                    <div class="p-4 text-center font-semibold text-gray-700">Гринч</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Зеркальные" alt="Зеркальные">
+                    <div class="p-4 text-center font-semibold text-gray-700">Зеркальные</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Крутышка" alt="Крутышка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Крутышка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Эльф" alt="Эльф">
+                    <div class="p-4 text-center font-semibold text-gray-700">Эльф</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Снеговик" alt="Снеговик">
+                    <div class="p-4 text-center font-semibold text-gray-700">Снеговик</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Фьёк" alt="Фьёк">
+                    <div class="p-4 text-center font-semibold text-gray-700">Фьёк</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Зайка" alt="Зайка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Зайка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Баба+Яга" alt="Баба Яга">
+                    <div class="p-4 text-center font-semibold text-gray-700">Баба Яга</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Фьёки+молодежьные" alt="Фьёки молодежьные">
+                    <div class="p-4 text-center font-semibold text-gray-700">Фьёки молодежьные</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Роскошные+Дед+Мороз+и+Снегурочка" alt="Роскошные Дед Мороз и Снегурочка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Роскошные Дед Мороз и Снегурочка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Бархатные+Дед+Мороз+и+Снегурочка" alt="Бархатные Дед Мороз и Снегурочка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Бархатные Дед Мороз и Снегурочка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Серебристые+Дед+Мороз+и+Снегурочка" alt="Серебристые Дед Мороз и Снегурочка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Серебристые Дед Мороз и Снегурочка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Лазурные+Дед+Мороз+и+Снегурочка" alt="Лазурные Дед Мороз и Снегурочка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Лазурные Дед Мороз и Снегурочка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Золотые+Дед+Мороз+и+Снегурочка" alt="Золотые Дед Мороз и Снегурочка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Золотые Дед Мороз и Снегурочка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Боярские+Дед+Мороз+и+Снегурочка" alt="Боярские Дед Мороз и Снегурочка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Боярские Дед Мороз и Снегурочка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Снеговички" alt="Снеговички">
+                    <div class="p-4 text-center font-semibold text-gray-700">Снеговички</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Игрушечки" alt="Игрушечки">
+                    <div class="p-4 text-center font-semibold text-gray-700">Игрушечки</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Молодежные" alt="Молодежные">
+                    <div class="p-4 text-center font-semibold text-gray-700">Молодежные</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Категория: Хеллоуин -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Хеллоуин</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Лизун" alt="Лизун">
+                    <div class="p-4 text-center font-semibold text-gray-700">Лизун</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Ведьма" alt="Ведьма">
+                    <div class="p-4 text-center font-semibold text-gray-700">Ведьма</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Мумия" alt="Мумия">
+                    <div class="p-4 text-center font-semibold text-gray-700">Мумия</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Джонотан" alt="Джонотан">
+                    <div class="p-4 text-center font-semibold text-gray-700">Джонотан</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Граф+Дракула" alt="Граф Дракула">
+                    <div class="p-4 text-center font-semibold text-gray-700">Граф Дракула</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Мэвис" alt="Мэвис">
+                    <div class="p-4 text-center font-semibold text-gray-700">Мэвис</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Корпорация+Монстров" alt="Корпорация Монстров">
+                    <div class="p-4 text-center font-semibold text-gray-700">Корпорация Монстров</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Харли+Квин+и+Джокер" alt="Харли Квин и Джокер">
+                    <div class="p-4 text-center font-semibold text-gray-700">Харли Квин и Джокер</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Охотники+за+привидениями" alt="Охотники за привидениями">
+                    <div class="p-4 text-center font-semibold text-gray-700">Охотники за привидениями</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Категория: Масленница -->
+        <section class="mb-10">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Масленница</h2>
+            <div class="catalog-grid">
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Парень" alt="Парень">
+                    <div class="p-4 text-center font-semibold text-gray-700">Парень</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Девушка" alt="Девушка">
+                    <div class="p-4 text-center font-semibold text-gray-700">Девушка</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Парень+(В+белом)" alt="Парень (В белом)">
+                    <div class="p-4 text-center font-semibold text-gray-700">Парень (В белом)</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/f2c2e3/FFF?text=Скоморохи" alt="Скоморохи">
+                    <div class="p-4 text-center font-semibold text-gray-700">Скоморохи</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/c2e3f2/FFF?text=Петух" alt="Петух">
+                    <div class="p-4 text-center font-semibold text-gray-700">Петух</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/93b3f2/FFF?text=Баба+Яга" alt="Баба Яга">
+                    <div class="p-4 text-center font-semibold text-gray-700">Баба Яга</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b2c2f2/FFF?text=Машенька" alt="Машенька">
+                    <div class="p-4 text-center font-semibold text-gray-700">Машенька</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/e3a9cf/FFF?text=Масленица" alt="Масленица">
+                    <div class="p-4 text-center font-semibold text-gray-700">Масленица</div>
+                </div>
+                <div class="animator-card">
+                    <img class="animator-image" src="https://placehold.co/400x400/b3a9e3/FFF?text=Медведь" alt="Медведь">
+                    <div class="p-4 text-center font-semibold text-gray-700">Медведь</div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="text-center py-4 text-sm text-gray-500">
+        &copy; 2023 Аниматоры БУМ
+    </footer>
+
+    <script>
+        // Получаем поле ввода и все карточки
+        const searchInput = document.getElementById('searchInput');
+        const animatorCards = document.querySelectorAll('.animator-card');
+        const sectionTitles = document.querySelectorAll('main h2');
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+
+            animatorCards.forEach(card => {
+                const title = card.querySelector('.font-semibold').textContent.toLowerCase();
+                const altText = card.querySelector('.animator-image').getAttribute('alt').toLowerCase();
+
+                // Показываем карточку, если заголовок или alt текст содержит поисковый запрос
+                if (title.includes(searchTerm) || altText.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Проверяем, остались ли видимые карточки в каждой секции
+            sectionTitles.forEach(title => {
+                const section = title.closest('section');
+                const cardsInASection = section.querySelectorAll('.animator-card');
+                let hasVisibleCard = false;
+
+                cardsInASection.forEach(card => {
+                    if (card.style.display !== 'none') {
+                        hasVisibleCard = true;
+                    }
+                });
+
+                // Показываем или скрываем заголовок секции в зависимости от наличия видимых карточек
+                if (hasVisibleCard) {
+                    title.style.display = 'block';
+                } else {
+                    title.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
